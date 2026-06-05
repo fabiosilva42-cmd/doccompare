@@ -156,3 +156,5 @@ curl "http://localhost:3000/api/trpc/setup.seed?input=%7B%22json%22%3A%7B%22conf
 - PDF Resumo Executivo da Fase 1.
 - Classificação de documentos por arquivo no upload.
 - Temperatura `0.3` para Fase 1.
+
+<!-- Deploy test: 2026-06-05T09:40:42Z -->
