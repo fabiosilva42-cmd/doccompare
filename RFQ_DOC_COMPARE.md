@@ -12,9 +12,9 @@ DocCompare is an AI-powered document audit platform for the toy and children's p
 
 ---
 
-## 2. What Already Exists (Do Not Quote For This)
+## 2. What Already Exists 
 
-The following is fully built, tested, and deployed. You will work **on top of this codebase**, not from scratch.
+The following is fully built, tested, and deployed. You will work **on top of this codebase** or on a clean one.
 
 ### Backend (Hono + tRPC + Drizzle ORM + MySQL)
 - Authentication system with role-based access (user, admin, supervisor)
