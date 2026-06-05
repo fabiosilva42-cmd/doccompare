@@ -158,3 +158,5 @@ curl "http://localhost:3000/api/trpc/setup.seed?input=%7B%22json%22%3A%7B%22conf
 - Temperatura `0.3` para Fase 1.
 
 <!-- Deploy test: 2026-06-05T09:40:42Z -->
+
+<!-- CI/CD test: 2026-06-05T09:47:06Z -->
