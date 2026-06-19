@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/providers/trpc";
+import { useTranslation } from "@/i18n/LanguageProvider";
 import { useToast } from "@/hooks/useToast";
 import {
   Settings,
@@ -19,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router";
 
 export default function AdminPrompts() {
+  const { t } = useTranslation();
   const { user, isLoading: authLoading } = useAuth();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({
@@ -99,10 +101,10 @@ export default function AdminPrompts() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2">
           <Settings className="w-6 h-6 text-slate-600" />
-          Gestão de Prompts
+          {t("admin.promptsTitle")}
         </h1>
         <p className="text-sm text-slate-500">
-          Configure e gerencie os prompts de análise disponíveis para o time.
+          {t("dashboard.managePromptsDesc")}
         </p>
       </div>
 

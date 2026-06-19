@@ -1,5 +1,7 @@
 import { useState, useCallback } from "react";
 import { trpc } from "@/providers/trpc";
+import { useTranslation } from "@/i18n/LanguageProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import {
   Sparkles,
   ArrowRight,
@@ -25,6 +27,7 @@ function isValidEmail(email: string): boolean {
 }
 
 export default function Login() {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<AuthMode>("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -58,7 +61,7 @@ export default function Login() {
 
   const forgotMutation = trpc.auth.forgotPassword.useMutation({
     onSuccess: () => {
-      setSuccess("Se existir uma conta com este email, voce recebera instrucoes para redefinir sua senha.");
+      setSuccess(t("auth.forgotSuccess"));
       setError("");
     },
     onError: (err) => {
@@ -68,7 +71,7 @@ export default function Login() {
 
   const resetMutation = trpc.auth.resetPassword.useMutation({
     onSuccess: () => {
-      setSuccess("Senha redefinida com sucesso! Faca login com a nova senha.");
+      setSuccess(t("auth.resetSuccess"));
       setMode("login");
       setPassword("");
       setConfirmPassword("");
@@ -95,62 +98,62 @@ export default function Login() {
 
     if (mode === "login") {
       if (!email.trim()) {
-        setError("O campo email e obrigatorio");
+        setError(t("auth.emailRequired"));
         return;
       }
       if (!password) {
-        setError("O campo senha e obrigatorio");
+        setError(t("auth.passwordRequired"));
         return;
       }
       loginMutation.mutate({ email, password });
     } else if (mode === "register") {
       if (!name.trim()) {
-        setError("O campo nome e obrigatorio");
+        setError(t("auth.nameRequired"));
         return;
       }
       if (!email.trim()) {
-        setError("O campo email e obrigatorio");
+        setError(t("auth.emailRequired"));
         return;
       }
       if (!password) {
-        setError("O campo senha e obrigatorio");
+        setError(t("auth.passwordRequired"));
         return;
       }
       if (password.length < 6) {
-        setError("A senha deve ter pelo menos 6 caracteres");
+        setError(t("auth.passwordMin"));
         return;
       }
       registerMutation.mutate({ name, email, password });
     } else if (mode === "forgot") {
       if (!email.trim()) {
-        setError("O campo email e obrigatorio");
+        setError(t("auth.emailRequired"));
         return;
       }
       if (!isValidEmail(email)) {
-        setError("Digite um email valido");
+        setError(t("auth.emailInvalid"));
         return;
       }
       forgotMutation.mutate({ email });
     } else if (mode === "reset") {
       if (!password) {
-        setError("O campo senha e obrigatorio");
+        setError(t("auth.passwordRequired"));
         return;
       }
       if (password.length < 8) {
-        setError("A senha deve ter pelo menos 8 caracteres");
+        setError(t("auth.resetMinChars"));
         return;
       }
       if (!/(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])/.test(password)) {
-        setError("A senha deve conter: 1 maiuscula, 1 numero e 1 caractere especial");
+        setError(t("auth.resetRequirements"));
         return;
       }
       if (password !== confirmPassword) {
-        setError("As senhas nao coincidem");
+        setError(t("auth.passwordMismatch"));
         return;
       }
       const token = new URLSearchParams(window.location.search).get("token");
       if (!token) {
-        setError("Token de recuperacao invalido");
+        setError(t("auth.invalidRecoveryToken"));
         return;
       }
       resetMutation.mutate({ token, password });
@@ -163,36 +166,42 @@ export default function Login() {
 
   const getTitle = () => {
     switch (mode) {
-      case "login": return "Bem-vindo de volta";
-      case "register": return "Criar conta";
-      case "forgot": return "Recuperar senha";
-      case "reset": return "Redefinir senha";
+      case "login": return t("auth.welcomeBack");
+      case "register": return t("auth.createAccount");
+      case "forgot": return t("auth.forgotTitle");
+      case "reset": return t("auth.resetTitle");
     }
   };
 
   const getSubtitle = () => {
     switch (mode) {
-      case "login": return "Entre com suas credenciais para acessar";
-      case "register": return "Registre-se para comecar a usar";
-      case "forgot": return "Informe seu email para receber instrucoes";
-      case "reset": return "Crie uma nova senha segura";
+      case "login": return t("auth.signInSubtitle");
+      case "register": return t("auth.registerSubtitle");
+      case "forgot": return t("auth.forgotSubtitle");
+      case "reset": return t("auth.resetSubtitle");
     }
   };
 
   const getButtonText = () => {
     if (isPending) {
-      if (mode === "login") return "Entrando...";
-      if (mode === "register") return "Criando conta...";
-      if (mode === "forgot") return "Enviando...";
-      return "Redefinindo...";
+      if (mode === "login") return t("auth.signingIn");
+      if (mode === "register") return t("auth.creatingAccount");
+      if (mode === "forgot") return t("auth.sending");
+      return t("auth.resetting");
     }
     switch (mode) {
-      case "login": return "Entrar";
-      case "register": return "Criar conta";
-      case "forgot": return "Enviar link de recuperacao";
-      case "reset": return "Redefinir senha";
+      case "login": return t("auth.signIn");
+      case "register": return t("auth.createAccount");
+      case "forgot": return t("auth.sendRecoveryLink");
+      case "reset": return t("auth.resetPassword");
     }
   };
+
+  const features = [
+    { icon: Shield, title: t("auth.featurePrompts"), desc: t("auth.featurePromptsDesc") },
+    { icon: Zap, title: t("auth.featureSpeed"), desc: t("auth.featureSpeedDesc") },
+    { icon: Lock, title: t("auth.featureSecure"), desc: t("auth.featureSecureDesc") },
+  ];
 
   return (
     <div className="min-h-screen flex">
@@ -217,22 +226,16 @@ export default function Login() {
           </div>
 
           <h1 className="text-4xl font-bold leading-tight mb-6 max-w-md">
-            Compare documentos com inteligência.
-            <span className="text-blue-400"> Sem escrever prompts.</span>
+            {t("auth.heroTitle")}
           </h1>
 
           <p className="text-slate-400 text-lg max-w-sm leading-relaxed">
-            Sua equipe foca no que importa. A IA cuida da análise. Prompts
-            pré-configurados, auditáveis e padronizados.
+            {t("auth.heroSubtitle")}
           </p>
         </div>
 
         <div className="relative z-10 space-y-4">
-          {[
-            { icon: Shield, title: "Prompts Auditáveis", desc: "Todo time usa a mesma metodologia" },
-            { icon: Zap, title: "Análise em Segundos", desc: "Resultados estruturados instantaneamente" },
-            { icon: Lock, title: "Seguro e Privado", desc: "Seus documentos são processados com segurança" },
-          ].map((feature) => (
+          {features.map((feature) => (
             <div key={feature.title} className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center">
                 <feature.icon className="w-5 h-5 text-blue-400" />
@@ -247,7 +250,10 @@ export default function Login() {
       </div>
 
       {/* Right panel - Auth form */}
-      <div className="flex-1 flex items-center justify-center bg-white p-8">
+      <div className="flex-1 flex items-center justify-center bg-white p-8 relative">
+        <div className="absolute top-4 right-4">
+          <LanguageSwitcher variant="login" />
+        </div>
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center gap-2.5 mb-8 justify-center">
             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
@@ -279,14 +285,14 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "register" && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Nome</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("auth.name")}</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Seu nome completo"
+                    placeholder={t("auth.fullNamePlaceholder")}
                     className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -295,7 +301,7 @@ export default function Login() {
 
             {(mode === "login" || mode === "register" || mode === "forgot") && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("auth.email")}</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
@@ -303,7 +309,7 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={() => setEmailTouched(true)}
-                    placeholder="seu@email.com"
+                    placeholder={t("auth.emailPlaceholder")}
                     className={cn(
                       "w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
                       emailInvalid ? "border-red-300 bg-red-50/30" : "border-slate-300"
@@ -311,7 +317,7 @@ export default function Login() {
                   />
                 </div>
                 {emailInvalid && (
-                  <p className="mt-1 text-xs text-red-600">Digite um email valido</p>
+                  <p className="mt-1 text-xs text-red-600">{t("auth.emailInvalid")}</p>
                 )}
               </div>
             )}
@@ -319,7 +325,7 @@ export default function Login() {
             {(mode === "login" || mode === "register" || mode === "reset") && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  {mode === "reset" ? "Nova senha" : "Senha"}
+                  {mode === "reset" ? t("auth.newPassword") : t("auth.password")}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -327,7 +333,7 @@ export default function Login() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={mode === "reset" ? "Min. 8 caracteres, 1 maiuscula, 1 numero, 1 especial" : "Sua senha"}
+                    placeholder={mode === "reset" ? t("auth.resetPasswordPlaceholder") : t("auth.passwordPlaceholder")}
                     className="w-full pl-10 pr-10 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   <button
@@ -339,21 +345,21 @@ export default function Login() {
                   </button>
                 </div>
                 {mode === "reset" && password.length > 0 && password.length < 8 && (
-                  <p className="mt-1 text-xs text-amber-600">Minimo 8 caracteres</p>
+                  <p className="mt-1 text-xs text-amber-600">{t("auth.resetMinChars")}</p>
                 )}
               </div>
             )}
 
             {mode === "reset" && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Confirmar nova senha</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("auth.confirmNewPassword")}</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repita a nova senha"
+                    placeholder={t("auth.repeatPasswordPlaceholder")}
                     className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -370,14 +376,14 @@ export default function Login() {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-slate-600">Manter conectado</span>
+                  <span className="text-sm text-slate-600">{t("auth.rememberMe")}</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => switchMode("forgot")}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
-                  Esqueci minha senha
+                  {t("auth.forgotPassword")}
                 </button>
               </div>
             )}
@@ -405,17 +411,17 @@ export default function Login() {
           <div className="mt-6 text-center space-y-2">
             {mode === "login" && (
               <p className="text-sm text-slate-500">
-                Nao tem conta?{" "}
+                {t("auth.noAccount")}{" "}
                 <button onClick={() => switchMode("register")} className="text-blue-600 hover:text-blue-700 font-medium">
-                  Registre-se
+                  {t("auth.register")}
                 </button>
               </p>
             )}
             {mode === "register" && (
               <p className="text-sm text-slate-500">
-                Ja tem conta?{" "}
+                {t("auth.hasAccount")}{" "}
                 <button onClick={() => switchMode("login")} className="text-blue-600 hover:text-blue-700 font-medium">
-                  Entrar
+                  {t("auth.signIn")}
                 </button>
               </p>
             )}
@@ -425,7 +431,7 @@ export default function Login() {
                 className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
                 <ChevronLeft className="w-4 h-4" />
-                Voltar para o login
+                {t("auth.backToLogin")}
               </button>
             )}
           </div>
@@ -434,18 +440,18 @@ export default function Login() {
           {(mode === "login" || mode === "register") && (
             <>
               <p className="mt-4 text-center text-xs text-slate-400">
-                Ao {mode === "login" ? "entrar" : "registrar"}, voce concorda com os{" "}
+                {t("auth.termsPrefix")}{" "}
                 <a href="/termos" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                  Termos de Uso
+                  {t("auth.terms")}
                 </a>{" "}
-                e{" "}
+                {t("auth.and")}{" "}
                 <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                  Politica de Privacidade
+                  {t("auth.privacy")}
                 </a>
                 .
               </p>
               <p className="mt-4 text-center text-xs text-slate-400">
-                © {currentYear} DocCompare. Todos os direitos reservados.
+                {t("auth.copyright", { year: currentYear })}
               </p>
             </>
           )}

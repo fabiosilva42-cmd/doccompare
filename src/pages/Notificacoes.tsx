@@ -1,4 +1,5 @@
 import { trpc } from "@/providers/trpc";
+import { useTranslation } from "@/i18n/LanguageProvider";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bell, Check, Trash2 } from "lucide-react";
@@ -6,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router";
 
 export default function Notificacoes() {
+  const { t } = useTranslation();
   const utils = trpc.useUtils();
 
   const { data: notificacoes, isLoading } = trpc.notificacao.list.useQuery();
@@ -34,7 +36,7 @@ export default function Notificacoes() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Notificações</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{t("notifications.title")}</h1>
         {!!notificacoes?.some((n) => !n.lida) && (
           <Button
             variant="outline"
@@ -42,19 +44,19 @@ export default function Notificacoes() {
             onClick={() => marcarTodasLidas.mutate()}
           >
             <Check className="w-4 h-4 mr-2" />
-            Marcar todas como lidas
+            {t("notifications.markAllRead")}
           </Button>
         )}
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">Carregando...</p>
+        <p className="text-sm text-slate-500">{t("common.loading")}</p>
       ) : !notificacoes?.length ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Bell className="w-10 h-10 text-slate-300 mx-auto mb-3" />
             <p className="text-sm text-slate-500">
-              Você não tem notificações ainda.
+              {t("notifications.empty")}
             </p>
           </CardContent>
         </Card>

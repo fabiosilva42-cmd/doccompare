@@ -1,14 +1,17 @@
 import { Outlet } from "react-router";
 import { Sidebar } from "./Sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/i18n/LanguageProvider";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export function AppLayout() {
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -23,7 +26,7 @@ export function AppLayout() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">Carregando...</p>
+          <p className="text-sm text-slate-500">{t("layout.loading")}</p>
         </div>
       </div>
     );
@@ -60,13 +63,17 @@ export function AppLayout() {
             <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
               <Menu className="w-5 h-5" />
             </Button>
-            <span className="font-semibold text-slate-900">DocCompare</span>
+            <span className="font-semibold text-slate-900">{t("common.appName")}</span>
           </div>
-          <NotificationBell />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <NotificationBell />
+          </div>
         </header>
 
         {/* Desktop header */}
-        <header className="hidden lg:flex bg-white border-b border-slate-200 px-6 py-3 items-center justify-end">
+        <header className="hidden lg:flex bg-white border-b border-slate-200 px-6 py-3 items-center justify-end gap-3">
+          <LanguageSwitcher />
           <NotificationBell />
         </header>
 

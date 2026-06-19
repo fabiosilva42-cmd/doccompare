@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { trpc } from "@/providers/trpc";
+import { useTranslation } from "@/i18n/LanguageProvider";
 import {
   Upload,
   X,
@@ -56,18 +57,9 @@ type TipoDocumento =
   | "bill_of_lading"
   | "outro";
 
-const TIPOS_DOCUMENTO: { value: TipoDocumento; label: string }[] = [
-  { value: "order_details", label: "📊 Order Details" },
-  { value: "die_cut", label: "📐 Die Cut" },
-  { value: "foto", label: "📷 Foto do Produto" },
-  { value: "commercial_invoice", label: "📄 Ordem de Compra (PO)" },
-  { value: "relatorio_inspecao", label: "📋 Relatório de Inspeção" },
-  { value: "briefing", label: "📝 Briefing" },
-  { value: "artwork", label: "🎨 Artwork" },
-  { value: "contraprova", label: "✅ Contraprova" },
-  { value: "packing_list", label: "📦 Packing List" },
-  { value: "bill_of_lading", label: "🚢 Bill of Lading" },
-  { value: "outro", label: "📎 Outro" },
+const DOC_TYPE_VALUES: TipoDocumento[] = [
+  "order_details", "die_cut", "foto", "commercial_invoice", "relatorio_inspecao",
+  "briefing", "artwork", "contraprova", "packing_list", "bill_of_lading", "outro",
 ];
 
 type FileItem = {
@@ -90,6 +82,7 @@ type FileUploadState = {
 };
 
 export default function NovaComparacao() {
+  const { t, locale } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -210,11 +203,11 @@ export default function NovaComparacao() {
 
   const handleExecutar = async () => {
     if (!selectedTipo) {
-      setError("Selecione um tipo de analise");
+      setError(t("comparison.selectAnalysisError"));
       return;
     }
     if (files.length < 1) {
-      setError("Envie pelo menos 1 documento");
+      setError(t("comparison.minFilesError"));
       return;
     }
 
@@ -231,7 +224,7 @@ export default function NovaComparacao() {
       if (!prompt) throw new Error("Prompt nao encontrado");
 
       const codigo = codigoPedido || `PED-${Date.now()}`;
-      const nome = nomePedido || `Pedido ${prompt.nome} - ${new Date().toLocaleDateString("pt-BR")}`;
+      const nome = nomePedido || `Pedido ${prompt.nome} - ${new Date().toLocaleDateString(locale === "pt" ? "pt-BR" : "en-US")}`;
       const { id: pedidoId } = await pedidoCreateMutation.mutateAsync({
         codigoPedido: codigo,
         nome,
@@ -268,9 +261,9 @@ export default function NovaComparacao() {
   };
 
   const steps = [
-    { num: 1, label: "Documentos" },
-    { num: 2, label: "Tipo de Analise" },
-    { num: 3, label: "Executar" },
+    { num: 1, label: t("comparison.stepDocuments") },
+    { num: 2, label: t("comparison.stepType") },
+    { num: 3, label: t("comparison.stepExecute") },
   ];
 
   return (
@@ -279,10 +272,10 @@ export default function NovaComparacao() {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-2 h-2 rounded-full bg-sky-500" />
-          <span className="text-[10px] font-bold text-sky-600 uppercase tracking-[0.15em]">Workflow</span>
+          <span className="text-[10px] font-bold text-sky-600 uppercase tracking-[0.15em]">{t("comparison.workflow")}</span>
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">Nova Comparacao</h1>
-        <p className="text-slate-500 text-sm mt-1">Envie seus documentos, selecione o tipo de analise e execute a comparacao com IA.</p>
+        <h1 className="text-2xl font-bold text-slate-900">{t("comparison.title")}</h1>
+        <p className="text-slate-500 text-sm mt-1">{t("comparison.subtitle")}</p>
       </div>
 
       {/* Stepper */}
@@ -312,7 +305,7 @@ export default function NovaComparacao() {
           <CardContent className="p-4 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-red-700">Erro</p>
+              <p className="text-sm font-semibold text-red-700">{t("common.error")}</p>
               <p className="text-xs text-red-600">{error}</p>
             </div>
           </CardContent>
@@ -330,11 +323,11 @@ export default function NovaComparacao() {
             <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mx-auto mb-4">
               <Upload className={cn("w-7 h-7", isDragging ? "text-sky-500" : "text-slate-400")} />
             </div>
-            <p className="text-sm font-semibold text-slate-700 mb-1">Arraste arquivos aqui ou clique para selecionar</p>
-            <p className="text-xs text-slate-400">PDF, DOCX, XLSX, CSV, TXT, JSON, JPG, PNG (max. 10MB cada)</p>
+            <p className="text-sm font-semibold text-slate-700 mb-1">{t("comparison.dropTitle")}</p>
+            <p className="text-xs text-slate-400">{t("comparison.dropHint")}</p>
             {files.length > 0 && (
               <p className="text-xs text-sky-600 font-semibold mt-2 bg-sky-50 inline-block px-3 py-1 rounded-full">
-                {files.length} arquivo{files.length !== 1 ? "s" : ""} selecionado{files.length !== 1 ? "s" : ""}
+                {t("comparison.filesSelected", { count: files.length })}
               </p>
             )}
           </Card>
@@ -365,9 +358,9 @@ export default function NovaComparacao() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {TIPOS_DOCUMENTO.map((t) => (
-                          <SelectItem key={t.value} value={t.value} className="text-xs">
-                            {t.label}
+                        {DOC_TYPE_VALUES.map((value) => (
+                          <SelectItem key={value} value={value} className="text-xs">
+                            {t(`comparison.docTypes.${value}`)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -383,7 +376,7 @@ export default function NovaComparacao() {
 
           <div className="flex justify-end">
             <Button onClick={() => setStep(2)} disabled={files.length < 1} className="bg-sky-700 hover:bg-sky-800 text-white rounded-xl px-6 h-11 font-semibold shadow-lg shadow-sky-500/15 transition-all hover:scale-[1.02] active:scale-[0.98]">
-              Proximo <ArrowRight className="w-4 h-4 ml-2" />
+              {t("common.next")} <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
         </div>
@@ -415,7 +408,7 @@ export default function NovaComparacao() {
                         {isSelected && (
                           <div className="flex items-center gap-1.5 mt-2 text-sky-600">
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span className="text-xs font-semibold">Selecionado</span>
+                            <span className="text-xs font-semibold">{t("comparison.selected")}</span>
                           </div>
                         )}
                       </div>
@@ -428,10 +421,10 @@ export default function NovaComparacao() {
 
           <div className="flex justify-between">
             <Button variant="outline" onClick={() => setStep(1)} className="rounded-xl h-11">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+              <ArrowLeft className="w-4 h-4 mr-2" /> {t("common.back")}
             </Button>
             <Button onClick={() => setStep(3)} disabled={!selectedTipo} className="bg-sky-700 hover:bg-sky-800 text-white rounded-xl px-6 h-11 font-semibold shadow-lg shadow-sky-500/15 transition-all hover:scale-[1.02] active:scale-[0.98]">
-              Proximo <ArrowRight className="w-4 h-4 ml-2" />
+              {t("common.next")} <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
         </div>
@@ -444,15 +437,15 @@ export default function NovaComparacao() {
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center gap-2 mb-1">
                 <FileCheck className="w-4 h-4 text-sky-600" />
-                <h3 className="font-semibold text-slate-900">Dados do Pedido</h3>
+                <h3 className="font-semibold text-slate-900">{t("comparison.orderData")}</h3>
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 block">Codigo do Pedido</label>
+                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 block">{t("comparison.orderCode")}</label>
                 <input type="text" value={codigoPedido} onChange={(e) => setCodigoPedido(e.target.value)} placeholder="Ex: SAT11675-25"
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-slate-50/50 transition-all" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 block">Nome do Pedido <span className="text-slate-400 font-normal normal-case">(opcional)</span></label>
+                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 block">{t("comparison.orderName")} <span className="text-slate-400 font-normal normal-case">({t("common.optional")})</span></label>
                 <input type="text" value={nomePedido} onChange={(e) => setNomePedido(e.target.value)} placeholder="Ex: LED Mirror Inner Box"
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-slate-50/50 transition-all" />
               </div>
@@ -463,11 +456,11 @@ export default function NovaComparacao() {
             <CardContent className="p-5 space-y-4">
               <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                 <Zap className="w-4 h-4 text-amber-500" />
-                Resumo
+                {t("comparison.summary")}
               </h3>
               <div className="space-y-3">
                 <div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Documentos ({files.length})</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">{t("comparison.documents")} ({files.length})</p>
                   <div className="space-y-1.5">
                     {files.map((f, i) => (
                       <div key={f.id} className="flex items-center gap-2 text-sm bg-slate-50 rounded-lg px-3 py-2">
@@ -479,7 +472,7 @@ export default function NovaComparacao() {
                   </div>
                 </div>
                 <div className="border-t border-slate-100 pt-3">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Tipo de Analise</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">{t("comparison.analysisType")}</p>
                   <div className="flex items-center gap-3">
                     {(() => {
                       const tipo = promptsList?.find((t: any) => t.slug === selectedTipo);
@@ -494,7 +487,7 @@ export default function NovaComparacao() {
                             <p className="text-sm font-semibold text-slate-900">{tipo.nome}</p>
                             <div className="flex items-center gap-1.5 mt-0.5">
                               <Lock className="w-3 h-3 text-slate-400" />
-                              <span className="text-xs text-slate-500">Prompt protegido</span>
+                              <span className="text-xs text-slate-500">{t("comparison.protectedPrompt")}</span>
                             </div>
                           </div>
                         </>
@@ -509,8 +502,8 @@ export default function NovaComparacao() {
           <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl border border-sky-100">
             <Sparkles className="w-5 h-5 text-sky-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-sky-800">Tempo medio de analise</p>
-              <p className="text-xs text-sky-600 mt-0.5">30-60 segundos dependendo do tamanho dos documentos. O resultado sera processado pelo modelo Kimi.</p>
+              <p className="text-sm font-semibold text-sky-800">{t("comparison.avgTime")}</p>
+              <p className="text-xs text-sky-600 mt-0.5">{t("comparison.avgTimeHint")}</p>
             </div>
           </div>
 
@@ -522,17 +515,17 @@ export default function NovaComparacao() {
                   <Loader2 className="w-5 h-5 animate-spin text-sky-600" />
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
-                      {uploadPhase === "creating" && "Criando pedido..."}
-                      {uploadPhase === "uploading" && "Enviando documentos..."}
-                      {uploadPhase === "analyzing" && "Analisando com IA..."}
-                      {uploadPhase === "done" && "Redirecionando..."}
+                      {uploadPhase === "creating" && t("comparison.creatingOrder")}
+                      {uploadPhase === "uploading" && t("comparison.uploading")}
+                      {uploadPhase === "analyzing" && t("comparison.analyzing")}
+                      {uploadPhase === "done" && t("comparison.redirecting")}
                     </p>
-                    <p className="text-xs text-slate-500">{uploadStates.filter((s) => s.status === "done").length} de {uploadStates.length} documentos enviados</p>
+                    <p className="text-xs text-slate-500">{t("comparison.uploadedOf", { done: uploadStates.filter((s) => s.status === "done").length, total: uploadStates.length })}</p>
                   </div>
                 </div>
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs text-slate-500 font-medium">{uploadStates.filter((s) => s.status === "done").length} de {uploadStates.length} documentos</span>
+                    <span className="text-xs text-slate-500 font-medium">{t("comparison.uploadedOf", { done: uploadStates.filter((s) => s.status === "done").length, total: uploadStates.length })}</span>
                     <span className="text-xs text-sky-600 font-bold">{Math.round(uploadStates.length > 0 ? (uploadStates.filter((s) => s.status === "done").length / uploadStates.length) * 100 : 0)}%</span>
                   </div>
                   <div className="w-full h-2.5 bg-sky-200/40 rounded-full overflow-hidden">
@@ -552,7 +545,9 @@ export default function NovaComparacao() {
                         {s.status === "uploading" && <Loader2 className="w-4 h-4 animate-spin text-sky-500" />}
                         {s.status === "done" && <Check className="w-4 h-4 text-emerald-500" />}
                         {s.status === "error" && <AlertCircle className="w-4 h-4 text-red-500" />}
-                        <span className="text-[10px] text-slate-400 uppercase font-medium">{s.status === "pending" ? "Aguardando" : s.status === "uploading" ? "Enviando" : s.status === "done" ? "Concluido" : "Erro"}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-medium">
+                          {s.status === "pending" ? t("comparison.waiting") : s.status === "uploading" ? t("comparison.uploadingStatus") : s.status === "done" ? t("comparison.done") : t("common.error")}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -563,10 +558,10 @@ export default function NovaComparacao() {
 
           <div className="flex justify-between">
             <Button variant="outline" onClick={() => setStep(2)} disabled={executando} className="rounded-xl h-11">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+              <ArrowLeft className="w-4 h-4 mr-2" /> {t("common.back")}
             </Button>
             <Button onClick={handleExecutar} disabled={executando} className="bg-sky-700 hover:bg-sky-800 text-white rounded-xl px-8 h-11 font-semibold shadow-xl shadow-sky-500/15 transition-all hover:scale-[1.02] active:scale-[0.98]">
-              {executando ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</> : <><Sparkles className="w-4 h-4 mr-2" /> Executar Comparacao</>}
+              {executando ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("common.processing")}</> : <><Sparkles className="w-4 h-4 mr-2" /> {t("comparison.execute")}</>}
             </Button>
           </div>
         </div>

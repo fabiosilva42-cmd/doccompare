@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/i18n/LanguageProvider";
 import { trpc } from "@/providers/trpc";
+import { ExportMenu } from "@/components/ExportMenu";
 import { useEffect, useState, useRef } from "react";
 import {
   FileText,
@@ -41,13 +43,16 @@ import {
 
 const COLORS = ["#0369A1", "#DC2626", "#F59E0B", "#10B981", "#8B5CF6", "#EC4899"];
 
-const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
-  pendente: { label: "Pendente", color: "text-slate-600 bg-slate-100 border-slate-200", dot: "bg-slate-400" },
-  em_andamento: { label: "Em Andamento", color: "text-amber-700 bg-amber-50 border-amber-200", dot: "bg-amber-500" },
-  concluido: { label: "Concluído", color: "text-emerald-700 bg-emerald-50 border-emerald-200", dot: "bg-emerald-500" },
-  arquivado: { label: "Arquivado", color: "text-slate-400 bg-slate-50 border-slate-200", dot: "bg-slate-300" },
-  cancelado: { label: "Cancelado", color: "text-red-700 bg-red-50 border-red-200", dot: "bg-red-500" },
-};
+function statusStyle(key: string) {
+  const styles: Record<string, { color: string; dot: string }> = {
+    pendente: { color: "text-slate-600 bg-slate-100 border-slate-200", dot: "bg-slate-400" },
+    em_andamento: { color: "text-amber-700 bg-amber-50 border-amber-200", dot: "bg-amber-500" },
+    concluido: { color: "text-emerald-700 bg-emerald-50 border-emerald-200", dot: "bg-emerald-500" },
+    arquivado: { color: "text-slate-400 bg-slate-50 border-slate-200", dot: "bg-slate-300" },
+    cancelado: { color: "text-red-700 bg-red-50 border-red-200", dot: "bg-red-500" },
+  };
+  return styles[key] ?? styles.pendente;
+}
 
 /* Animated counter */
 function useCountUp(target: number, duration = 1200) {
@@ -102,7 +107,7 @@ function SkeletonChart() {
   );
 }
 
-function EmptyChart({ title, icon: Icon }: { title: string; icon: React.ElementType }) {
+function EmptyChart({ title, icon: Icon, t }: { title: string; icon: React.ElementType; t: (key: string) => string }) {
   return (
     <Card className="border-slate-200/80 shadow-sm">
       <CardHeader className="pb-2">
@@ -113,8 +118,8 @@ function EmptyChart({ title, icon: Icon }: { title: string; icon: React.ElementT
           <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
             <Icon className="w-6 h-6 text-slate-300" />
           </div>
-          <p className="text-sm text-slate-500 font-medium">Sem dados suficientes</p>
-          <p className="text-xs text-slate-400 mt-1 max-w-[200px]">Os dados aparecerao quando houver comparacoes concluidas</p>
+          <p className="text-sm text-slate-500 font-medium">{t("common.noData")}</p>
+          <p className="text-xs text-slate-400 mt-1 max-w-[200px]">{t("common.noDataHint")}</p>
         </div>
       </CardContent>
     </Card>
@@ -145,6 +150,7 @@ function TendenciaBadge({ variacao }: { variacao: number }) {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const isAdmin = user?.role === "admin";
 
   const { data: overview, isLoading: overviewLoading } = trpc.metricas.overview.useQuery();
@@ -176,13 +182,22 @@ export default function Dashboard() {
   const recentes = pedidosList?.slice(0, 5) ?? [];
 
   const stats = [
-    { icon: FileText, label: "Total Pedidos", value: totalPedidos, raw: overview?.totalPedidos ?? 0, tendencia: tendencia?.pedidos, color: "bg-slate-900 text-white", lightColor: "bg-slate-100 text-slate-700" },
-    { icon: Activity, label: "Pedidos Ativos", value: pedidosAtivos, raw: overview?.pedidosAtivos ?? 0, color: "bg-sky-700 text-white", lightColor: "bg-sky-50 text-sky-700" },
-    { icon: BarChart3, label: "Comparacoes", value: totalComparacoes, raw: overview?.totalComparacoes ?? 0, tendencia: tendencia?.comparacoes, color: "bg-violet-700 text-white", lightColor: "bg-violet-50 text-violet-700" },
-    { icon: FileCheck, label: "Concluidas", value: comparacoesConcluidas, raw: overview?.comparacoesConcluidas ?? 0, tendencia: tendencia?.reprovados, color: "bg-emerald-700 text-white", lightColor: "bg-emerald-50 text-emerald-700" },
+    { icon: FileText, label: t("dashboard.totalOrders"), value: totalPedidos, raw: overview?.totalPedidos ?? 0, tendencia: tendencia?.pedidos, color: "bg-slate-900 text-white", lightColor: "bg-slate-100 text-slate-700" },
+    { icon: Activity, label: t("dashboard.activeOrders"), value: pedidosAtivos, raw: overview?.pedidosAtivos ?? 0, color: "bg-sky-700 text-white", lightColor: "bg-sky-50 text-sky-700" },
+    { icon: BarChart3, label: t("dashboard.comparisons"), value: totalComparacoes, raw: overview?.totalComparacoes ?? 0, tendencia: tendencia?.comparacoes, color: "bg-violet-700 text-white", lightColor: "bg-violet-50 text-violet-700" },
+    { icon: FileCheck, label: t("dashboard.completed"), value: comparacoesConcluidas, raw: overview?.comparacoesConcluidas ?? 0, tendencia: tendencia?.reprovados, color: "bg-emerald-700 text-white", lightColor: "bg-emerald-50 text-emerald-700" },
   ];
 
   const isAnyLoading = overviewLoading || pedidosLoading;
+
+  const metricsExportRows = [
+    {
+      [t("dashboard.totalOrders")]: overview?.totalPedidos ?? 0,
+      [t("dashboard.activeOrders")]: overview?.pedidosAtivos ?? 0,
+      [t("dashboard.comparisons")]: overview?.totalComparacoes ?? 0,
+      [t("dashboard.completed")]: overview?.comparacoesConcluidas ?? 0,
+    },
+  ];
 
   return (
     <div className="space-y-8 max-w-6xl">
@@ -196,22 +211,33 @@ export default function Dashboard() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[11px] font-semibold text-sky-200 uppercase tracking-wider">Plataforma Operacional</span>
+              <span className="text-[11px] font-semibold text-sky-200 uppercase tracking-wider">{t("dashboard.platformOperational")}</span>
             </div>
             <h1 className="text-2xl font-bold mb-2">
-              Ola, {user?.name?.split(" ")[0] || "Usuario"}
+              {t("dashboard.greeting", { name: user?.name?.split(" ")[0] || t("common.user") })}
             </h1>
             <p className="text-slate-300 text-sm max-w-sm">
-              Voce tem <span className="font-semibold text-white">{pedidosMes}</span> pedido{pedidosMes !== 1 ? "s" : ""} este mes. Gerencie suas comparacoes e acompanhe o workflow.
+              {t("dashboard.subtitle", { count: pedidosMes })}
             </p>
           </div>
-          <Link to="/nova-comparacao">
-            <Button className="bg-white hover:bg-slate-100 text-slate-900 font-semibold rounded-xl px-6 shadow-xl shadow-black/10 transition-all hover:scale-[1.02] active:scale-[0.98] h-11">
-              <Zap className="w-4 h-4 mr-2 text-sky-600" />
-              Nova Comparacao
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+            {!overviewLoading && (
+              <ExportMenu
+                rows={metricsExportRows}
+                filename={t("phase2.export.metricsFilename")}
+                sheetName="Metrics"
+                variant="hero"
+                size="sm"
+              />
+            )}
+            <Link to="/nova-comparacao">
+              <Button className="bg-white hover:bg-slate-100 text-slate-900 font-semibold rounded-xl px-6 shadow-xl shadow-black/10 transition-all hover:scale-[1.02] active:scale-[0.98] h-11 w-full sm:w-auto">
+                <Zap className="w-4 h-4 mr-2 text-sky-600" />
+                {t("dashboard.newComparison")}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -243,13 +269,13 @@ export default function Dashboard() {
       {isAdmin && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {deptLoading ? <SkeletonChart /> : !reprovacaoDept || reprovacaoDept.length === 0 ? (
-            <EmptyChart title="Taxa de Reprovacao por Departamento" icon={BarChart3} />
+            <EmptyChart title={t("dashboard.reprovalByDept")} icon={BarChart3} t={t} />
           ) : (
             <Card className="border-slate-200/80 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                  Taxa de Reprovacao por Departamento
+                  {t("dashboard.reprovalByDept")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -269,13 +295,13 @@ export default function Dashboard() {
           )}
 
           {embLoading ? <SkeletonChart /> : !reprovacaoEmb || reprovacaoEmb.length === 0 ? (
-            <EmptyChart title="Taxa de Reprovacao por Embalagem" icon={Package} />
+            <EmptyChart title={t("dashboard.reprovalByPackaging")} icon={Package} t={t} />
           ) : (
             <Card className="border-slate-200/80 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                  Taxa de Reprovacao por Embalagem
+                  {t("dashboard.reprovalByPackaging")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -294,13 +320,13 @@ export default function Dashboard() {
           )}
 
           {rankingLoading ? <SkeletonChart /> : !rankingErros || rankingErros.length === 0 ? (
-            <EmptyChart title="Campos com Mais Erros" icon={AlertTriangle} />
+            <EmptyChart title={t("dashboard.topErrorsFields")} icon={AlertTriangle} t={t} />
           ) : (
             <Card className="border-slate-200/80 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                  Campos com Mais Erros
+                  {t("dashboard.topErrorsFields")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -320,13 +346,13 @@ export default function Dashboard() {
           )}
 
           {tokensLoading ? <SkeletonChart /> : !tokensMes || tokensMes.length === 0 ? (
-            <EmptyChart title="Tokens Consumidos (por mes)" icon={Activity} />
+            <EmptyChart title={t("dashboard.tokensConsumed")} icon={Activity} t={t} />
           ) : (
             <Card className="border-slate-200/80 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-sky-500" />
-                  Tokens Consumidos (por mes)
+                  {t("dashboard.tokensConsumed")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -337,8 +363,8 @@ export default function Dashboard() {
                       <XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
                       <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                      <Line type="monotone" dataKey="tokensEntrada" stroke="#0369A1" strokeWidth={2.5} dot={false} name="Entrada" />
-                      <Line type="monotone" dataKey="tokensSaida" stroke="#10B981" strokeWidth={2.5} dot={false} name="Saida" />
+                      <Line type="monotone" dataKey="tokensEntrada" stroke="#0369A1" strokeWidth={2.5} dot={false} name={t("dashboard.input")} />
+                      <Line type="monotone" dataKey="tokensSaida" stroke="#10B981" strokeWidth={2.5} dot={false} name={t("dashboard.output")} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -352,11 +378,11 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Pedidos Recentes</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Ultimos 5 pedidos criados na plataforma</p>
+            <h2 className="text-lg font-bold text-slate-900">{t("dashboard.recentOrders")}</h2>
+            <p className="text-xs text-slate-500 mt-0.5">{t("dashboard.recentOrdersDesc")}</p>
           </div>
           <Link to="/historico" className="text-sm text-sky-700 hover:text-sky-800 font-semibold flex items-center gap-1 transition-colors">
-            Ver todos <ArrowRight className="w-4 h-4" />
+            {t("common.viewAll")} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -380,17 +406,18 @@ export default function Dashboard() {
               <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
                 <Package className="w-6 h-6 text-slate-300" />
               </div>
-              <p className="text-slate-500 text-sm font-medium">Nenhum pedido criado ainda.</p>
-              <p className="text-slate-400 text-xs mt-1">Comece criando seu primeiro pedido de comparacao.</p>
+              <p className="text-slate-500 text-sm font-medium">{t("dashboard.noOrdersYet")}</p>
+              <p className="text-slate-400 text-xs mt-1">{t("dashboard.noOrdersHint")}</p>
               <Link to="/nova-comparacao" className="mt-3 inline-block">
-                <Button variant="link" className="text-sky-700 font-semibold">Criar primeiro pedido</Button>
+                <Button variant="link" className="text-sky-700 font-semibold">{t("dashboard.createFirstOrder")}</Button>
               </Link>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-3">
             {recentes.map((pedido) => {
-              const status = statusConfig[pedido.statusGeral] ?? statusConfig.pendente;
+              const status = statusStyle(pedido.statusGeral);
+              const statusLabel = t(`status.${pedido.statusGeral}`);
               return (
                 <Card key={pedido.id} className="border-slate-200/80 shadow-sm hover:shadow-md hover:border-sky-200 transition-all duration-300 group">
                   <CardContent className="p-4 flex items-center gap-4">
@@ -400,10 +427,10 @@ export default function Dashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-slate-900 truncate">{pedido.codigoPedido} — {pedido.nome}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-medium">{pedido.faseAtual}</Badge>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-medium">{t(`phase.${pedido.faseAtual}`)}</Badge>
                         <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border ${status.color}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
-                          {status.label}
+                          {statusLabel}
                         </span>
                       </div>
                     </div>
@@ -413,7 +440,7 @@ export default function Dashboard() {
                           <Eye className="w-4 h-4" />
                         </Button>
                       </Link>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-red-50 hover:text-red-500" onClick={() => { if (confirm("Excluir este pedido?")) deleteMutation.mutate({ id: pedido.id }); }}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-red-50 hover:text-red-500" onClick={() => { if (confirm(t("dashboard.deleteOrderConfirm"))) deleteMutation.mutate({ id: pedido.id }); }}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -429,8 +456,8 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Tipos de Analise Disponiveis</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Prompts configurados por departamento</p>
+            <h2 className="text-lg font-bold text-slate-900">{t("dashboard.analysisTypes")}</h2>
+            <p className="text-xs text-slate-500 mt-0.5">{t("dashboard.analysisTypesDesc")}</p>
           </div>
         </div>
 
@@ -456,10 +483,10 @@ export default function Dashboard() {
               <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
                 <Sparkles className="w-6 h-6 text-slate-300" />
               </div>
-              <p className="text-slate-500 text-sm font-medium">Nenhum prompt configurado ainda.</p>
+              <p className="text-slate-500 text-sm font-medium">{t("dashboard.noPromptsYet")}</p>
               {isAdmin && (
                 <Link to="/admin/prompts" className="mt-2 inline-block">
-                  <Button variant="link" className="text-sky-700 font-semibold">Configurar prompts</Button>
+                  <Button variant="link" className="text-sky-700 font-semibold">{t("dashboard.configurePrompts")}</Button>
                 </Link>
               )}
             </CardContent>
@@ -482,7 +509,7 @@ export default function Dashboard() {
                           </Badge>
                         </div>
                         <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{tipo.descricao}</p>
-                        <Badge variant="secondary" className="text-[10px] mt-2 capitalize font-medium bg-slate-100 text-slate-600">{tipo.departamento}</Badge>
+                        <Badge variant="secondary" className="text-[10px] mt-2 capitalize font-medium bg-slate-100 text-slate-600">{t(`roles.${tipo.departamento === "admin" ? "adminDept" : tipo.departamento}`)}</Badge>
                       </div>
                     </div>
                   </CardContent>
@@ -503,8 +530,8 @@ export default function Dashboard() {
                   <AlertTriangle className="w-5 h-5 text-violet-600" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm text-slate-900">Gestao de Prompts</p>
-                  <p className="text-xs text-slate-500">Configurar prompts por departamento</p>
+                  <p className="font-semibold text-sm text-slate-900">{t("dashboard.managePrompts")}</p>
+                  <p className="text-xs text-slate-500">{t("dashboard.managePromptsDesc")}</p>
                 </div>
                 <ArrowRight className="w-4 h-4 text-slate-300 ml-auto group-hover:text-sky-600 group-hover:translate-x-1 transition-all" />
               </CardContent>
@@ -517,8 +544,8 @@ export default function Dashboard() {
                   <Users className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm text-slate-900">Gestao de Usuarios</p>
-                  <p className="text-xs text-slate-500">Administrar departamentos e supervisores</p>
+                  <p className="font-semibold text-sm text-slate-900">{t("dashboard.manageUsers")}</p>
+                  <p className="text-xs text-slate-500">{t("dashboard.manageUsersDesc")}</p>
                 </div>
                 <ArrowRight className="w-4 h-4 text-slate-300 ml-auto group-hover:text-sky-600 group-hover:translate-x-1 transition-all" />
               </CardContent>

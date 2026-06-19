@@ -1,4 +1,5 @@
 import { trpc } from "@/providers/trpc";
+import { useTranslation } from "@/i18n/LanguageProvider";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 export default function RevisoesAQL() {
+  const { t } = useTranslation();
   const utils = trpc.useUtils();
   const [observacoes, setObservacoes] = useState<Record<number, string>>({});
 
@@ -25,7 +27,7 @@ export default function RevisoesAQL() {
       return (
         <Badge variant="destructive">
           <AlertTriangle className="w-3 h-3 mr-1" />
-          Divergência
+          {t("aql.divergence")}
         </Badge>
       );
     }
@@ -33,7 +35,7 @@ export default function RevisoesAQL() {
       return (
         <Badge className="bg-green-600">
           <Check className="w-3 h-3 mr-1" />
-          Aprovado
+          {t("aql.approve")}
         </Badge>
       );
     }
@@ -41,13 +43,13 @@ export default function RevisoesAQL() {
       return (
         <Badge variant="secondary" className="bg-red-100 text-red-700">
           <X className="w-3 h-3 mr-1" />
-          Reprovado
+          {t("aql.reject")}
         </Badge>
       );
     }
     return (
       <Badge variant="outline" className="text-amber-600 border-amber-200">
-        Pendente
+        {t("aql.pending")}
       </Badge>
     );
   };
@@ -58,23 +60,22 @@ export default function RevisoesAQL() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <ShieldCheck className="w-6 h-6 text-blue-600" />
-            Revisões AQL
+            {t("aql.title")}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            20% das comparações aprovadas são selecionadas aleatoriamente para
-            revisão humana.
+            {t("aql.subtitle")}
           </p>
         </div>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">Carregando...</p>
+        <p className="text-sm text-slate-500">{t("aql.loading")}</p>
       ) : !revisoes?.length ? (
         <Card>
           <CardContent className="py-12 text-center">
             <ShieldCheck className="w-10 h-10 text-slate-300 mx-auto mb-3" />
             <p className="text-sm text-slate-500">
-              Nenhuma revisão designada para você no momento.
+              {t("aql.empty")}
             </p>
           </CardContent>
         </Card>

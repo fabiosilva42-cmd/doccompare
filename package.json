@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mock": "vite --mode mock",
     "build": "vite build && esbuild api/boot.ts --platform=node --bundle --format=esm --outdir=dist --banner:js=\"import { createRequire } from 'module';const require = createRequire(import.meta.url);\" --external:playwright-core --external:playwright --external:chromium-bidi --external:pdf-parse --external:tesseract.js --external:mysql2 --external:@aws-sdk/client-s3 --external:@aws-sdk/lib-storage --external:dotenv",
     "lint": "eslint .",
     "preview": "vite preview",

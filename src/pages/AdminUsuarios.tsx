@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/providers/trpc";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/i18n/LanguageProvider";
 import { useToast } from "@/hooks/useToast";
 import { Navigate } from "react-router";
 import {
@@ -83,6 +84,7 @@ function DeleteModal({
 }
 
 export default function AdminUsuarios() {
+  const { t } = useTranslation();
   const { user, isLoading: authLoading } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [name, setName] = useState("");
@@ -213,9 +215,9 @@ export default function AdminUsuarios() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2">
             <Users className="w-6 h-6 text-slate-600" />
-            Gestao de Usuarios
+            {t("admin.usersTitle")}
           </h1>
-          <p className="text-sm text-slate-500">Crie e gerencie as contas do time.</p>
+          <p className="text-sm text-slate-500">{t("dashboard.manageUsersDesc")}</p>
         </div>
         <Button
           onClick={() => {
