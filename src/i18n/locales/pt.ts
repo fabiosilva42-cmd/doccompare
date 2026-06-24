@@ -353,6 +353,7 @@ const pt: TranslationDict = {
       columns: "Colunas",
       order: "pedido",
       orders: "pedidos",
+      assignee: "Responsável",
     },
     history: {
       totalOrders: "Total de pedidos",
@@ -370,10 +371,15 @@ const pt: TranslationDict = {
       savePreset: "Salvar preset",
       loadPreset: "Carregar preset",
       savedPresets: "Presets de filtro salvos",
+      department: "Departamento",
     },
     export: {
       label: "Exportar",
       chooseFormat: "Escolha o formato",
+      customize: "Personalizar colunas…",
+      builderTitle: "Personalizar exportação",
+      builderHint: "Selecione quais colunas incluir no arquivo exportado.",
+      resetFields: "Restaurar padrões",
       csv: "Baixar CSV",
       excel: "Baixar Excel",
       client: "Cliente",

@@ -8,6 +8,7 @@ import {
   type PedidoFilterState,
   type PedidoListItem,
 } from "@/lib/pedidoFilters";
+import { buildKanbanColumns, groupPedidosByPhase } from "@/lib/kanbanColumns";
 import { PedidoAdvancedFilters } from "@/components/filters/PedidoAdvancedFilters";
 import { PageHeader } from "@/components/phase2/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,8 +33,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
-
-const KANBAN_COLUMNS = ["atendimento", "design", "cq", "concluido", "arquivado"] as const;
 
 const columnTheme: Record<
   string,
@@ -81,12 +80,36 @@ const columnTheme: Record<
   },
 };
 
+const themePalette = [
+  columnTheme.atendimento,
+  columnTheme.design,
+  columnTheme.cq,
+  columnTheme.concluido,
+  columnTheme.arquivado,
+];
+
+const defaultColumnTheme = {
+  border: "border-t-indigo-500",
+  bg: "bg-gradient-to-b from-indigo-50/80 to-white",
+  header: "text-indigo-800",
+  dot: "bg-indigo-500",
+  icon: LayoutGrid,
+  iconBg: "bg-indigo-100 text-indigo-700",
+};
+
+function getColumnTheme(phase: string, index: number) {
+  return columnTheme[phase] ?? themePalette[index % themePalette.length] ?? defaultColumnTheme;
+}
+
 export default function Kanban() {
   const { t, locale } = useTranslation();
   const [filters, setFilters] = useState<PedidoFilterState>({ ...DEFAULT_PEDIDO_FILTERS });
   const [boardSearch, setBoardSearch] = useState("");
 
-  const { data: pedidosList, isLoading } = trpc.pedido.list.useQuery();
+  const { data: pedidosList, isLoading: pedidosLoading } = trpc.pedido.list.useQuery();
+  const { data: promptsList, isLoading: promptsLoading } = trpc.prompt.list.useQuery();
+
+  const isLoading = pedidosLoading || promptsLoading;
 
   const filtered = useMemo(() => {
     const list = (pedidosList ?? []) as PedidoListItem[];
@@ -103,17 +126,15 @@ export default function Kanban() {
     return result;
   }, [pedidosList, filters, boardSearch]);
 
-  const byPhase = useMemo(() => {
-    const map: Record<string, PedidoListItem[]> = {};
-    for (const col of KANBAN_COLUMNS) map[col] = [];
-    for (const p of filtered) {
-      const phase = KANBAN_COLUMNS.includes(p.faseAtual as (typeof KANBAN_COLUMNS)[number])
-        ? p.faseAtual
-        : "atendimento";
-      map[phase].push(p);
-    }
-    return map;
-  }, [filtered]);
+  const kanbanColumns = useMemo(
+    () => buildKanbanColumns(promptsList, (pedidosList ?? []).map((p) => p.faseAtual)),
+    [promptsList, pedidosList]
+  );
+
+  const byPhase = useMemo(
+    () => groupPedidosByPhase(filtered, kanbanColumns),
+    [filtered, kanbanColumns]
+  );
 
   const dateFmt = locale === "pt" ? "pt-BR" : "en-US";
 
@@ -126,7 +147,7 @@ export default function Kanban() {
         icon={LayoutGrid}
         stats={[
           { label: t("phase2.kanban.totalVisible"), value: filtered.length },
-          { label: t("phase2.kanban.columns"), value: KANBAN_COLUMNS.length },
+          { label: t("phase2.kanban.columns"), value: kanbanColumns.length },
         ]}
       >
         <div className="relative w-full sm:w-72">
@@ -158,8 +179,8 @@ export default function Kanban() {
         </div>
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-6 pt-1 min-h-[480px] snap-x snap-mandatory scrollbar-thin">
-          {KANBAN_COLUMNS.map((phase) => {
-            const theme = columnTheme[phase];
+          {kanbanColumns.map((phase, columnIndex) => {
+            const theme = getColumnTheme(phase, columnIndex);
             const ColIcon = theme.icon;
             const items = byPhase[phase] ?? [];
             return (

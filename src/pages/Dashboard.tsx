@@ -3,7 +3,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "@/i18n/LanguageProvider";
 import { trpc } from "@/providers/trpc";
 import { ExportMenu } from "@/components/ExportMenu";
-import { useEffect, useState, useRef } from "react";
 import {
   FileText,
   Clock,
@@ -52,28 +51,6 @@ function statusStyle(key: string) {
     cancelado: { color: "text-red-700 bg-red-50 border-red-200", dot: "bg-red-500" },
   };
   return styles[key] ?? styles.pendente;
-}
-
-/* Animated counter */
-function useCountUp(target: number, duration = 1200) {
-  const [value, setValue] = useState(0);
-  const startTime = useRef<number | null>(null);
-  const raf = useRef<number>(0);
-
-  useEffect(() => {
-    startTime.current = null;
-    const animate = (timestamp: number) => {
-      if (!startTime.current) startTime.current = timestamp;
-      const progress = Math.min((timestamp - startTime.current) / duration, 1);
-      const easeOut = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.floor(easeOut * target));
-      if (progress < 1) raf.current = requestAnimationFrame(animate);
-    };
-    raf.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf.current);
-  }, [target, duration]);
-
-  return value;
 }
 
 function SkeletonCard() {
@@ -166,18 +143,13 @@ export default function Dashboard() {
     onSuccess: () => utils.pedido.list.invalidate(),
   });
 
-  const totalPedidos = useCountUp(overview?.totalPedidos ?? 0);
-  const pedidosAtivos = useCountUp(overview?.pedidosAtivos ?? 0);
-  const totalComparacoes = useCountUp(overview?.totalComparacoes ?? 0);
-  const comparacoesConcluidas = useCountUp(overview?.comparacoesConcluidas ?? 0);
+  const totalPedidos = overview?.totalPedidos ?? 0;
+  const pedidosAtivos = overview?.pedidosAtivos ?? 0;
+  const totalComparacoes = overview?.totalComparacoes ?? 0;
+  const comparacoesConcluidas = overview?.comparacoesConcluidas ?? 0;
   const tendencia = overview?.tendencia;
 
-  const pedidosMes =
-    pedidosList?.filter((p) => {
-      const d = new Date(p.createdAt);
-      const now = new Date();
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    }).length ?? 0;
+  const pedidosMes = overview?.tendencia?.pedidos?.atual ?? 0;
 
   const recentes = pedidosList?.slice(0, 5) ?? [];
 

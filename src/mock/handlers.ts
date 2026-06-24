@@ -12,6 +12,7 @@ import {
   resolveMockUser,
   getActiveMockUser,
   setActiveMockUser,
+  computeMockOverview,
 } from "./data";
 
 type MockState = {
@@ -156,20 +157,7 @@ export async function handleMockProcedure(
       };
 
     case "metricas.overview":
-      return {
-        totalPedidos: 12,
-        pedidosAtivos: 8,
-        totalComparacoes: 24,
-        comparacoesConcluidas: 22,
-        totalItens: 66,
-        itensReprovados: 3,
-        totalDivergencias: 1,
-        tendencia: {
-          pedidos: { atual: 4, anterior: 3, variacao: 33 },
-          comparacoes: { atual: 6, anterior: 5, variacao: 20 },
-          reprovados: { atual: 1, anterior: 2, variacao: -50 },
-        },
-      };
+      return computeMockOverview();
 
     case "metricas.reprovacaoPorDepartamento":
       return [

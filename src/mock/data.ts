@@ -4,7 +4,7 @@ export const MOCK_TOKEN = "mock-demo-token";
 
 export const MOCK_USER = {
   id: 1,
-  name: "Demo Admin",
+  name: "Ricardo Mendes",
   email: "admin@doccompare.com",
   role: "admin" as const,
   departamento: "admin" as const,
@@ -230,6 +230,33 @@ export const MOCK_PEDIDOS = [
     responsavelNome: "Ana Atendimento",
   },
 ];
+
+/** Deterministic dashboard metrics derived from mock pedidos (stable for UAT). */
+export function computeMockOverview() {
+  const totalPedidos = MOCK_PEDIDOS.length;
+  const pedidosAtivos = MOCK_PEDIDOS.filter(
+    (p) => p.statusGeral === "em_andamento" || p.statusGeral === "pendente"
+  ).length;
+  const totalComparacoes = MOCK_PEDIDOS.reduce((sum, p) => sum + (p.comparacaoCount ?? 0), 0);
+  const comparacoesConcluidas = MOCK_PEDIDOS.filter(
+    (p) => p.statusGeral === "concluido" || p.statusGeral === "arquivado"
+  ).reduce((sum, p) => sum + (p.comparacaoCount ?? 0), 0);
+
+  return {
+    totalPedidos,
+    pedidosAtivos,
+    totalComparacoes,
+    comparacoesConcluidas,
+    totalItens: totalComparacoes * 3,
+    itensReprovados: 3,
+    totalDivergencias: 1,
+    tendencia: {
+      pedidos: { atual: 3, anterior: 2, variacao: 50 },
+      comparacoes: { atual: 6, anterior: 5, variacao: 20 },
+      reprovados: { atual: 1, anterior: 2, variacao: -50 },
+    },
+  };
+}
 
 const mockAnalises = [
   {

@@ -158,7 +158,6 @@ export default function Historico() {
     filters.status !== "todos" ||
     filters.phase !== "todos" ||
     filters.department !== "todos" ||
-    filters.department !== "todos" ||
     filters.dateFrom ||
     filters.dateTo ||
     filters.divergenceMin ||
