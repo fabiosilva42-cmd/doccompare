@@ -8,6 +8,7 @@ import {
   type NotificationPrefs,
 } from "@/lib/notificationPrefs";
 import { PageHeader } from "@/components/phase2/PageHeader";
+import { PageShell } from "@/components/layout/PageShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -45,10 +46,10 @@ function PrefRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-4 p-4 rounded-xl border transition-all duration-200",
+        "flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200",
         checked
-          ? "bg-white border-sky-200/80 shadow-sm shadow-sky-500/5"
-          : "bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200/80"
+          ? "bg-white border-sky-500 shadow-sm"
+          : "bg-slate-50 border-transparent hover:bg-white hover:border-slate-300"
       )}
     >
       <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", accent)}>
@@ -102,28 +103,27 @@ export default function Preferencias() {
   const smsEnabled = [prefs.smsRejection, prefs.smsSupervisorOverride].filter(Boolean).length;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-24">
+    <PageShell width="wide" className="pb-28">
       <PageHeader
         badge={t("phase2.prefs.badge")}
         title={t("phase2.prefs.title")}
         subtitle={t("phase2.prefs.subtitle")}
         icon={Bell}
-        gradient="violet"
         stats={[
           { label: t("phase2.prefs.emailSection"), value: `${emailEnabled}/4` },
           { label: t("phase2.prefs.smsSection"), value: `${smsEnabled}/2` },
         ]}
       />
 
-      <div className="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 text-amber-950 text-sm shadow-sm">
+      <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border-2 border-amber-400 text-amber-950 text-sm">
         <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
           <Info className="w-4 h-4 text-amber-700" />
         </div>
         <p className="leading-relaxed pt-1.5">{t("phase2.prefs.frontendOnlyNote")}</p>
       </div>
 
-      <Card className="border-slate-200/80 shadow-md shadow-slate-200/40 overflow-hidden ring-1 ring-slate-100">
-        <CardHeader className="pb-3 bg-gradient-to-r from-sky-50/80 to-white border-b border-slate-100">
+      <Card className="border-2 border-slate-300 shadow-sm overflow-hidden">
+        <CardHeader className="pb-3 bg-slate-50 border-b-2 border-slate-300">
           <CardTitle className="text-base flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
               <Mail className="w-4 h-4 text-sky-700" />
@@ -134,7 +134,7 @@ export default function Preferencias() {
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 space-y-2">
+        <CardContent className="p-3 sm:p-4 space-y-2">
           <PrefRow
             icon={ArrowRightLeft}
             accent="bg-sky-100 text-sky-700"
@@ -153,7 +153,7 @@ export default function Preferencias() {
           />
           <PrefRow
             icon={Shield}
-            accent="bg-violet-100 text-violet-700"
+            accent="bg-slate-100 text-slate-700"
             label={t("phase2.prefs.emailAql")}
             description={t("phase2.prefs.emailAqlDesc")}
             checked={prefs.emailAqlAssignment}
@@ -170,11 +170,11 @@ export default function Preferencias() {
         </CardContent>
       </Card>
 
-      <Card className="border-slate-200/80 shadow-md shadow-slate-200/40 overflow-hidden ring-1 ring-slate-100">
-        <CardHeader className="pb-3 bg-gradient-to-r from-violet-50/80 to-white border-b border-slate-100">
+      <Card className="border-2 border-slate-300 shadow-sm overflow-hidden">
+        <CardHeader className="pb-3 bg-slate-50 border-b-2 border-slate-300">
           <CardTitle className="text-base flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-violet-700" />
+            <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
+              <MessageSquare className="w-4 h-4 text-slate-700" />
             </div>
             <div>
               <span className="font-bold text-slate-900">{t("phase2.prefs.smsSection")}</span>
@@ -182,7 +182,7 @@ export default function Preferencias() {
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 space-y-2">
+        <CardContent className="p-3 sm:p-4 space-y-2">
           <PrefRow
             icon={XCircle}
             accent="bg-orange-100 text-orange-700"
@@ -193,7 +193,7 @@ export default function Preferencias() {
           />
           <PrefRow
             icon={Smartphone}
-            accent="bg-indigo-100 text-indigo-700"
+            accent="bg-sky-100 text-sky-700"
             label={t("phase2.prefs.smsSupervisor")}
             description={t("phase2.prefs.smsSupervisorDesc")}
             checked={prefs.smsSupervisorOverride}
@@ -204,24 +204,24 @@ export default function Preferencias() {
 
       <div
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200/80 bg-white/90 backdrop-blur-md transition-transform duration-300 lg:left-[260px]",
+          "fixed bottom-0 right-0 z-40 border-t-2 border-slate-300 bg-white/95 backdrop-blur-md transition-transform duration-300 left-0 lg:left-[248px]",
           dirty ? "translate-y-0" : "translate-y-full"
         )}
       >
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-8">
           <p className="text-sm text-slate-600 font-medium">{t("phase2.prefs.unsavedChanges")}</p>
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             <Button type="button" variant="outline" className="rounded-xl h-10" onClick={handleReset}>
               <RotateCcw className="w-4 h-4 mr-2" />
               {t("phase2.prefs.reset")}
             </Button>
-            <Button type="button" className="rounded-xl h-10 bg-sky-700 hover:bg-sky-800 shadow-lg shadow-sky-500/20 px-6" onClick={handleSave}>
+            <Button type="button" className="rounded-xl h-10 bg-sky-700 hover:bg-sky-800 shadow-md shadow-sky-500/15 px-5" onClick={handleSave}>
               <Save className="w-4 h-4 mr-2" />
               {t("common.save")}
             </Button>
           </div>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

@@ -8,6 +8,7 @@ import {
   FileText,
   ArrowRight,
   ArrowLeft,
+  ArrowLeftRight,
   Sparkles,
   Lock,
   CheckCircle2,
@@ -29,6 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { PageShell } from "@/components/layout/PageShell";
+import { PageHeader } from "@/components/phase2/PageHeader";
 
 function getLucideIcon(name: string) {
   try {
@@ -267,33 +270,30 @@ export default function NovaComparacao() {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-2 h-2 rounded-full bg-sky-500" />
-          <span className="text-[10px] font-bold text-sky-600 uppercase tracking-[0.15em]">{t("comparison.workflow")}</span>
-        </div>
-        <h1 className="text-2xl font-bold text-slate-900">{t("comparison.title")}</h1>
-        <p className="text-slate-500 text-sm mt-1">{t("comparison.subtitle")}</p>
-      </div>
+    <PageShell width="wide">
+      <PageHeader
+        badge={t("comparison.workflow")}
+        title={t("comparison.title")}
+        subtitle={t("comparison.subtitle")}
+        icon={ArrowLeftRight}
+      />
 
       {/* Stepper */}
-      <div className="flex items-center gap-2 mb-8">
+      <div className="flex items-center gap-2 rounded-2xl border-2 border-slate-300 bg-slate-50/80 p-3 sm:p-4">
         {steps.map((s, i) => (
-          <div key={s.num} className="flex items-center gap-2 flex-1">
+          <div key={s.num} className="flex min-w-0 flex-1 items-center gap-2">
             <div className={cn(
-              "w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-sm",
-              step === s.num ? "bg-sky-600 text-white shadow-sky-500/20" :
-              step > s.num ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold transition-all duration-200 sm:h-9 sm:w-9",
+              step === s.num ? "bg-slate-900 text-white" :
+              step > s.num ? "bg-emerald-600 text-white" : "border-2 border-slate-300 bg-white text-slate-400"
             )}>
-              {step > s.num ? <CheckCircle2 className="w-4 h-4" /> : s.num}
+              {step > s.num ? <CheckCircle2 className="h-4 w-4" /> : s.num}
             </div>
-            <span className={cn("text-sm font-semibold hidden sm:block transition-colors", step === s.num ? "text-slate-900" : "text-slate-400")}>
+            <span className={cn("hidden truncate text-sm font-semibold transition-colors sm:block", step === s.num ? "text-slate-900" : "text-slate-400")}>
               {s.label}
             </span>
             {i < 2 && (
-              <div className={cn("flex-1 h-[2px] rounded-full mx-1 transition-colors duration-300", step > s.num ? "bg-emerald-500" : "bg-slate-200")} />
+              <div className={cn("mx-1 h-[2px] flex-1 rounded-full transition-colors duration-200", step > s.num ? "bg-emerald-500" : "bg-slate-200")} />
             )}
           </div>
         ))}
@@ -317,7 +317,7 @@ export default function NovaComparacao() {
         <div className="space-y-6">
           <Card className={cn(
             "border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300",
-            isDragging ? "border-sky-500 bg-sky-50/50 scale-[1.01] shadow-lg shadow-sky-500/10" : "border-slate-200 bg-slate-50/50 hover:border-sky-400 hover:bg-sky-50/30"
+            isDragging ? "border-sky-500 bg-sky-50/50 scale-[1.01] shadow-lg shadow-sky-500/10" : "border-slate-300 bg-slate-50/50 hover:border-sky-400 hover:bg-sky-50/30"
           )} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()}>
             <input ref={fileInputRef} type="file" multiple accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.csv,.json,.md" onChange={handleFileSelect} className="hidden" />
             <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mx-auto mb-4">
@@ -335,7 +335,7 @@ export default function NovaComparacao() {
           {files.length > 0 && (
             <div className="space-y-2">
               {files.map((file) => (
-                <Card key={file.id} className="border-slate-200/80 shadow-sm hover:border-sky-200 transition-all duration-200 group">
+                <Card key={file.id} className="border-2 border-slate-300 shadow-sm hover:border-sky-500 transition-all duration-200 group">
                   <CardContent className="p-3 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-sky-50 to-slate-100 flex items-center justify-center flex-shrink-0">
                       <FileText className="w-4 h-4 text-sky-600" />
@@ -392,7 +392,7 @@ export default function NovaComparacao() {
               return (
                 <Card key={tipo.id} onClick={() => setSelectedTipo(tipo.slug)} className={cn(
                   "cursor-pointer transition-all duration-300",
-                  isSelected ? "border-sky-500 bg-sky-50/50 shadow-lg shadow-sky-500/10 ring-1 ring-sky-500" : "border-slate-200/80 shadow-sm hover:border-sky-300 hover:shadow-md hover:-translate-y-0.5"
+                  isSelected ? "border-sky-500 bg-sky-50/50 shadow-lg shadow-sky-500/10 ring-1 ring-sky-500" : "border-2 border-slate-300 shadow-sm hover:border-sky-300 hover:shadow-md hover:-translate-y-0.5"
                 )}>
                   <CardContent className="p-5">
                     <div className="flex items-start gap-4">
@@ -433,7 +433,7 @@ export default function NovaComparacao() {
       {/* Step 3: Confirm & Execute */}
       {step === 3 && (
         <div className="space-y-6">
-          <Card className="border-slate-200/80 shadow-sm">
+          <Card className="border-2 border-slate-300 shadow-sm">
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center gap-2 mb-1">
                 <FileCheck className="w-4 h-4 text-sky-600" />
@@ -442,17 +442,17 @@ export default function NovaComparacao() {
               <div>
                 <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 block">{t("comparison.orderCode")}</label>
                 <input type="text" value={codigoPedido} onChange={(e) => setCodigoPedido(e.target.value)} placeholder="Ex: SAT11675-25"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-slate-50/50 transition-all" />
+                  className="w-full px-4 py-2.5 border-2 border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-slate-50/50 transition-all" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 block">{t("comparison.orderName")} <span className="text-slate-400 font-normal normal-case">({t("common.optional")})</span></label>
                 <input type="text" value={nomePedido} onChange={(e) => setNomePedido(e.target.value)} placeholder="Ex: LED Mirror Inner Box"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-slate-50/50 transition-all" />
+                  className="w-full px-4 py-2.5 border-2 border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-slate-50/50 transition-all" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200/80 shadow-sm">
+          <Card className="border-2 border-slate-300 shadow-sm">
             <CardContent className="p-5 space-y-4">
               <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                 <Zap className="w-4 h-4 text-amber-500" />
@@ -566,6 +566,6 @@ export default function NovaComparacao() {
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

@@ -113,8 +113,8 @@ export function PedidoAdvancedFilters({
   return (
     <Card
       className={cn(
-        "border-slate-200/80 overflow-hidden transition-shadow",
-        variant === "elevated" ? "shadow-md shadow-slate-200/50 ring-1 ring-slate-100" : "shadow-sm"
+        "border-2 border-slate-300 overflow-hidden transition-shadow",
+        variant === "elevated" ? "shadow-md" : "shadow-sm"
       )}
     >
       <CardContent className="p-0">
@@ -126,7 +126,7 @@ export function PedidoAdvancedFilters({
                 placeholder={t("phase2.filters.searchPlaceholder")}
                 value={filters.search}
                 onChange={(e) => patch({ search: e.target.value })}
-                className="pl-10 h-11 rounded-xl border-slate-200/80 bg-white shadow-sm focus:shadow-md focus:border-sky-300 transition-all"
+                className="pl-10 h-11 rounded-xl border-2 border-slate-300 bg-white shadow-sm focus:shadow-md focus:border-sky-500 transition-all"
               />
               {filters.search && (
                 <button
@@ -182,10 +182,10 @@ export function PedidoAdvancedFilters({
                   type="button"
                   onClick={() => patch({ status: s })}
                   className={cn(
-                    "text-xs h-8 px-3.5 rounded-full font-semibold border transition-all duration-200",
+                    "text-xs h-8 px-3.5 rounded-full font-semibold border-2 transition-all duration-200",
                     active
                       ? "bg-sky-700 text-white border-sky-700 shadow-md shadow-sky-500/20 scale-[1.02]"
-                      : "bg-white text-slate-600 border-slate-200 hover:border-sky-200 hover:bg-sky-50/50"
+                      : "bg-white text-slate-600 border-slate-300 hover:border-sky-500 hover:bg-sky-50"
                   )}
                 >
                   {s === "todos" ? t("status.todos") : t(`status.${s}`)}
@@ -197,7 +197,7 @@ export function PedidoAdvancedFilters({
 
         <div
           className={cn(
-            "grid transition-all duration-300 ease-out border-t border-slate-100 bg-slate-50/50",
+            "grid transition-all duration-300 ease-out border-t-2 border-slate-300 bg-slate-50",
             expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
           )}
         >
@@ -210,7 +210,7 @@ export function PedidoAdvancedFilters({
                     {t("phase2.filters.department")}
                   </label>
                   <Select value={filters.department} onValueChange={(v) => patch({ department: v })}>
-                    <SelectTrigger className="rounded-xl h-10 bg-white border-slate-200 shadow-sm">
+                    <SelectTrigger className="rounded-xl h-10 bg-white border-2 border-slate-300 shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -228,7 +228,7 @@ export function PedidoAdvancedFilters({
                     {t("history.colPhase")}
                   </label>
                   <Select value={filters.phase} onValueChange={(v) => patch({ phase: v })}>
-                    <SelectTrigger className="rounded-xl h-10 bg-white border-slate-200 shadow-sm">
+                    <SelectTrigger className="rounded-xl h-10 bg-white border-2 border-slate-300 shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -249,7 +249,7 @@ export function PedidoAdvancedFilters({
                     type="date"
                     value={filters.dateFrom}
                     onChange={(e) => patch({ dateFrom: e.target.value })}
-                    className="rounded-xl h-10 bg-white border-slate-200 shadow-sm"
+                    className="rounded-xl h-10 bg-white border-2 border-slate-300 shadow-sm"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -261,7 +261,7 @@ export function PedidoAdvancedFilters({
                     type="date"
                     value={filters.dateTo}
                     onChange={(e) => patch({ dateTo: e.target.value })}
-                    className="rounded-xl h-10 bg-white border-slate-200 shadow-sm"
+                    className="rounded-xl h-10 bg-white border-2 border-slate-300 shadow-sm"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -277,7 +277,7 @@ export function PedidoAdvancedFilters({
                       placeholder="0"
                       value={filters.divergenceMin}
                       onChange={(e) => patch({ divergenceMin: e.target.value })}
-                      className="rounded-xl h-10 bg-white border-slate-200 shadow-sm"
+                      className="rounded-xl h-10 bg-white border-2 border-slate-300 shadow-sm"
                     />
                     <span className="text-slate-300 font-light">—</span>
                     <Input
@@ -287,14 +287,14 @@ export function PedidoAdvancedFilters({
                       placeholder="100"
                       value={filters.divergenceMax}
                       onChange={(e) => patch({ divergenceMax: e.target.value })}
-                      className="rounded-xl h-10 bg-white border-slate-200 shadow-sm"
+                      className="rounded-xl h-10 bg-white border-2 border-slate-300 shadow-sm"
                     />
                   </div>
                 </div>
               </div>
 
               {showPresets && (
-                <div className="pt-4 border-t border-slate-200/60 space-y-3">
+                <div className="pt-4 border-t-2 border-slate-300 space-y-3">
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                     {t("phase2.filters.savedPresets")}
                   </p>
@@ -304,7 +304,7 @@ export function PedidoAdvancedFilters({
                       value={presetName}
                       onChange={(e) => setPresetName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && savePreset()}
-                      className="rounded-xl h-10 bg-white border-slate-200 shadow-sm flex-1"
+                      className="rounded-xl h-10 bg-white border-2 border-slate-300 shadow-sm flex-1"
                     />
                     <Button
                       type="button"
@@ -322,7 +322,7 @@ export function PedidoAdvancedFilters({
                       {presets.map((p) => (
                         <div
                           key={p.id}
-                          className="inline-flex items-center gap-1 pl-3 pr-1 py-1 rounded-full bg-white border border-slate-200 shadow-sm hover:border-sky-200 hover:shadow transition-all"
+                          className="inline-flex items-center gap-1 pl-3 pr-1 py-1 rounded-full bg-white border-2 border-slate-300 shadow-sm hover:border-sky-500 hover:shadow transition-all"
                         >
                           <button
                             type="button"

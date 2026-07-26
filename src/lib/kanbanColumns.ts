@@ -55,6 +55,26 @@ export function buildKanbanColumns(
   return columns;
 }
 
+/** "nova_fase-embalagem" → "Nova Fase Embalagem" */
+export function humanizePhase(slug: string): string {
+  return slug
+    .split(/[_-]/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+/**
+ * Label de fase resiliente: usa a tradução se existir; para fases novas
+ * criadas dinamicamente (sem chave de tradução), humaniza o slug em vez
+ * de exibir a chave crua.
+ */
+export function phaseLabel(t: (key: string) => string, phase: string): string {
+  const key = `phase.${phase}`;
+  const label = t(key);
+  return label === key ? humanizePhase(phase) : label;
+}
+
 export function groupPedidosByPhase<T extends { faseAtual: string }>(
   pedidos: T[],
   columns: string[]

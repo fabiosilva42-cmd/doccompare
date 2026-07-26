@@ -1,14 +1,37 @@
-name: Deploy to Production
+name: CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
+  pull_request:
 
 jobs:
-  deploy:
+  # Roda em todo push e PR — tsc + vitest
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to VPS via SSH
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Type check
+        run: npm run check
+      - name: Unit tests
+        run: npm test
+
+  # Deploy só na main, só se os testes passaram.
+  # Para exigir aprovação manual: Settings → Environments → production →
+  # "Required reviewers". Sem isso o deploy segue automático.
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy to VPS via SSH (health check + rollback)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -17,14 +40,22 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           script: |
             set -e
-            echo "=== Starting deploy ==="
             cd /var/www/doccompare
-            echo "=== Pulling latest code ==="
+            PREV=$(git rev-parse HEAD)
+            echo "=== Commit atual (para rollback): $PREV ==="
             git pull origin main
-            echo "=== Installing dependencies ==="
             npm ci
-            echo "=== Building project ==="
             npm run build
-            echo "=== Restarting PM2 ==="
             pm2 restart ecosystem.config.cjs
-            echo "=== Deploy finished ==="
+            echo "=== Aguardando app subir ==="
+            sleep 8
+            if curl -fsS http://localhost:3000/api/ready > /dev/null; then
+              echo "=== Health check OK — deploy concluído ==="
+            else
+              echo "=== Health check FALHOU — rollback para $PREV ==="
+              git reset --hard "$PREV"
+              npm ci
+              npm run build
+              pm2 restart ecosystem.config.cjs
+              exit 1
+            fi

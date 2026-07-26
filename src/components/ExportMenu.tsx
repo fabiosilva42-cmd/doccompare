@@ -52,7 +52,7 @@ export function ExportMenu({
             <ChevronDown className="w-4 h-4 ml-2 opacity-70" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52 rounded-xl p-1 shadow-xl border-slate-200/80">
+        <DropdownMenuContent align="end" className="w-52 rounded-xl p-1 shadow-xl border-2 border-slate-300">
           <DropdownMenuLabel className="text-xs text-slate-500 font-medium px-2 py-1.5">
             {t("phase2.export.chooseFormat")}
           </DropdownMenuLabel>
@@ -103,7 +103,7 @@ export function ExportMenu({
             <ChevronDown className="w-4 h-4 ml-2 opacity-70" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52 rounded-xl p-1 shadow-xl border-slate-200/80">
+        <DropdownMenuContent align="end" className="w-52 rounded-xl p-1 shadow-xl border-2 border-slate-300">
           <DropdownMenuLabel className="text-xs text-slate-500 font-medium px-2 py-1.5">
             {t("phase2.export.chooseFormat")}
           </DropdownMenuLabel>

@@ -3,3 +3,11 @@ dist
 .git
 *.swp
 *.log
+*.tar.gz
+.env
+.env.*
+docs
+DOCUMENTS
+.kimi
+.github
+.claude

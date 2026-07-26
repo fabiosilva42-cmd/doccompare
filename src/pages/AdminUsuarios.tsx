@@ -25,6 +25,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageShell } from "@/components/layout/PageShell";
+import { PageHeader } from "@/components/phase2/PageHeader";
 
 const deptLabels: Record<string, string> = {
   atendimento: "Atendimento",
@@ -112,7 +114,7 @@ export default function AdminUsuarios() {
   const createMutation = trpc.usuario.create.useMutation({
     onSuccess: () => {
       utils.usuario.list.invalidate();
-      toastSuccess("Usuario criado", `${name} foi adicionado com sucesso.`);
+      toastSuccess(t("admin.userCreated"), t("admin.userCreatedDesc", { name }));
       setName("");
       setEmail("");
       setPassword("");
@@ -123,7 +125,7 @@ export default function AdminUsuarios() {
     },
     onError: (err) => {
       setError(err.message);
-      toastError("Erro ao criar usuario", err.message);
+      toastError(t("common.error"), err.message);
     },
   });
 
@@ -131,9 +133,9 @@ export default function AdminUsuarios() {
     onSuccess: () => {
       utils.usuario.list.invalidate();
       setEditingId(null);
-      toastSuccess("Usuario atualizado", "Departamento e supervisor atualizados.");
+      toastSuccess(t("admin.userUpdated"), t("admin.userUpdatedDesc"));
     },
-    onError: (err) => toastError("Erro ao atualizar", err.message),
+    onError: (err) => toastError(t("common.error"), err.message),
   });
 
   const updateRoleMutation = trpc.usuario.updateRole.useMutation({
@@ -144,9 +146,9 @@ export default function AdminUsuarios() {
     onSuccess: () => {
       utils.usuario.list.invalidate();
       setDeleteModal(null);
-      toastSuccess("Usuario excluido", "O usuario foi removido permanentemente.");
+      toastSuccess(t("admin.userDeleted"), t("admin.userDeletedDesc"));
     },
-    onError: (err) => toastError("Erro ao excluir", err.message),
+    onError: (err) => toastError(t("common.error"), err.message),
   });
 
   if (authLoading) {
@@ -200,7 +202,7 @@ export default function AdminUsuarios() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <PageShell width="wide">
       <DeleteModal
         open={deleteModal !== null}
         onClose={() => setDeleteModal(null)}
@@ -211,31 +213,29 @@ export default function AdminUsuarios() {
         isPending={deleteMutation.isPending}
       />
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2">
-            <Users className="w-6 h-6 text-slate-600" />
-            {t("admin.usersTitle")}
-          </h1>
-          <p className="text-sm text-slate-500">{t("dashboard.manageUsersDesc")}</p>
-        </div>
+      <PageHeader
+        badge={t("nav.admin")}
+        title={t("admin.usersTitle")}
+        subtitle={t("dashboard.manageUsersDesc")}
+        icon={Users}
+      >
         <Button
           onClick={() => {
             setShowCreateForm(!showCreateForm);
             setError("");
           }}
-          className="bg-blue-600 hover:bg-blue-700 rounded-xl"
+          className="h-10 rounded-xl bg-white text-slate-900 hover:bg-slate-100"
         >
-          <UserPlus className="w-4 h-4 mr-2" />
-          {showCreateForm ? "Cancelar" : "Novo Usuario"}
+          <UserPlus className="mr-2 h-4 w-4" />
+          {showCreateForm ? t("admin.cancel") : t("admin.newUser")}
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Create form */}
       {showCreateForm && (
         <Card className="border-blue-200 bg-blue-50/50">
           <CardContent className="p-5">
-            <h3 className="font-semibold text-slate-900 mb-4">Criar novo usuario</h3>
+            <h3 className="font-semibold text-slate-900 mb-4">{t("admin.createNewUser")}</h3>
 
             {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-sm text-red-700">
@@ -247,7 +247,7 @@ export default function AdminUsuarios() {
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1.5">Nome</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1.5">{t("admin.name")}</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -260,7 +260,7 @@ export default function AdminUsuarios() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1.5">Email</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1.5">{t("admin.email")}</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -276,7 +276,7 @@ export default function AdminUsuarios() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1.5">Senha</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1.5">{t("admin.password")}</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -295,28 +295,28 @@ export default function AdminUsuarios() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1.5">Perfil</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1.5">{t("admin.role")}</label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value as "user" | "admin")}
                     className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                   >
-                    <option value="user">Usuario</option>
-                    <option value="admin">Administrador</option>
+                    <option value="user">{t("roles.user")}</option>
+                    <option value="admin">{t("roles.admin")}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1.5">Departamento</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1.5">{t("admin.department")}</label>
                   <select
                     value={departamento}
                     onChange={(e) => setDepartamento(e.target.value)}
                     className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                   >
-                    <option value="atendimento">Atendimento</option>
-                    <option value="design">Design</option>
-                    <option value="cq">CQ</option>
+                    <option value="atendimento">{t("phase.atendimento")}</option>
+                    <option value="design">{t("phase.design")}</option>
+                    <option value="cq">{t("phase.cq")}</option>
 
-                    <option value="supervisor">Supervisor</option>
+                    <option value="supervisor">{t("roles.supervisor")}</option>
                   </select>
                 </div>
               </div>
@@ -331,7 +331,7 @@ export default function AdminUsuarios() {
                 />
                 <label htmlFor="isSupervisor" className="text-sm text-slate-600 flex items-center gap-1">
                   <Shield className="w-3.5 h-3.5 text-amber-500" />
-                  Supervisor (pode aprovar overrides)
+                  {t("admin.supervisor")}
                 </label>
               </div>
 
@@ -342,7 +342,7 @@ export default function AdminUsuarios() {
                   ) : (
                     <UserPlus className="w-4 h-4 mr-2" />
                   )}
-                  Criar Usuario
+                  {t("admin.createUserBtn")}
                 </Button>
               </div>
             </form>
@@ -358,7 +358,7 @@ export default function AdminUsuarios() {
       )}
 
       {/* Users table */}
-      <Card className="border-slate-200">
+      <Card className="border-slate-300">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
@@ -373,11 +373,11 @@ export default function AdminUsuarios() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/50">
+                  <tr className="border-b border-slate-300 bg-slate-50/50">
                     <th className="text-left py-3 px-4 font-medium text-slate-500 text-xs uppercase tracking-wider">Nome</th>
                     <th className="text-left py-3 px-4 font-medium text-slate-500 text-xs uppercase tracking-wider">Email</th>
                     <th className="text-left py-3 px-4 font-medium text-slate-500 text-xs uppercase tracking-wider">Perfil</th>
-                    <th className="text-left py-3 px-4 font-medium text-slate-500 text-xs uppercase tracking-wider">Departamento</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-500 text-xs uppercase tracking-wider">{t("admin.department")}</th>
                     <th className="text-left py-3 px-4 font-medium text-slate-500 text-xs uppercase tracking-wider">Criado em</th>
                     <th className="text-right py-3 px-4 font-medium text-slate-500 text-xs uppercase tracking-wider">Acoes</th>
                   </tr>
@@ -392,7 +392,7 @@ export default function AdminUsuarios() {
                           </div>
                           <span className="font-medium text-slate-900">
                             {u.name}
-                            {u.id === user?.id && <span className="text-xs text-blue-500 ml-1">(voce)</span>}
+                            {u.id === user?.id && <span className="text-xs text-blue-500 ml-1">{t("admin.you")}</span>}
                           </span>
                         </div>
                       </td>
@@ -401,7 +401,7 @@ export default function AdminUsuarios() {
                         <button
                           onClick={() => {
                             const newRole = u.role === "admin" ? "user" : "admin";
-                            if (confirm(`Alterar ${u.name} para ${newRole === "admin" ? "Administrador" : "Usuario"}?`)) {
+                            if (confirm(t("admin.confirmRoleChange", { name: u.name, role: newRole === "admin" ? t("roles.admin") : t("roles.user") }))) {
                               updateRoleMutation.mutate({ id: u.id, role: newRole });
                             }
                           }}
@@ -415,7 +415,7 @@ export default function AdminUsuarios() {
                           ) : (
                             <Badge variant="outline" className="text-[10px] hover:bg-slate-100">
                               <User className="w-3 h-3 mr-1" />
-                              Usuario
+                              {t("roles.user")}
                             </Badge>
                           )}
                         </button>
@@ -428,11 +428,11 @@ export default function AdminUsuarios() {
                               onChange={(e) => setEditDept(e.target.value)}
                               className="px-2 py-1 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                              <option value="atendimento">Atendimento</option>
-                              <option value="design">Design</option>
-                              <option value="cq">CQ</option>
+                              <option value="atendimento">{t("phase.atendimento")}</option>
+                              <option value="design">{t("phase.design")}</option>
+                              <option value="cq">{t("phase.cq")}</option>
 
-                              <option value="supervisor">Supervisor</option>
+                              <option value="supervisor">{t("roles.supervisor")}</option>
                             </select>
                             <label className="flex items-center gap-1 text-xs text-slate-600 cursor-pointer">
                               <input
@@ -441,7 +441,7 @@ export default function AdminUsuarios() {
                                 onChange={(e) => setEditSupervisor(e.target.checked)}
                                 className="w-3 h-3 rounded border-slate-300 text-blue-600"
                               />
-                              Supervisor
+                              {t("admin.supervisor")}
                             </label>
                             <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => saveEdit(u.id)} disabled={updateMutation.isPending}>
                               <Save className="w-3.5 h-3.5 text-emerald-600" />
@@ -503,6 +503,6 @@ export default function AdminUsuarios() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   );
 }

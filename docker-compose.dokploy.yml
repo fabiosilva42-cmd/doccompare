@@ -1,0 +1,54 @@
+# Production deployment for Dokploy (Compose service type)
+# - Set the variables below in Dokploy → your service → Environment
+# - Attach your domain to the "app" service, container port 3000
+# - On first boot MySQL auto-creates all tables from db/init.sql
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: doccompare
+      MYSQL_USER: doccompare
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - doccompare_mysql:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # DB (senha SEM caracteres especiais — ela entra numa URL)
+      DATABASE_URL: mysql://doccompare:${DB_PASSWORD}@db:3306/doccompare
+      # Kimi / Moonshot
+      APP_ID: ${APP_ID}
+      APP_SECRET: ${APP_SECRET}
+      KIMI_AUTH_URL: ${KIMI_AUTH_URL:-https://api.moonshot.ai}
+      KIMI_OPEN_URL: ${KIMI_OPEN_URL:-https://api.moonshot.ai}
+      # Links nos emails
+      APP_URL: ${APP_URL}
+      # Email (Resend)
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_COPY_ADMINS: ${MAIL_COPY_ADMINS:-true}
+      # Storage (S3)
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-eu-north-1}
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:-doccompare-uploads}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  doccompare_mysql:

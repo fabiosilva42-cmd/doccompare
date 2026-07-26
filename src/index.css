@@ -20,9 +20,10 @@
     --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    /* Stronger solid outlines — clearly visible cards/inputs/buttons */
+    --border: 215 16% 72%;
+    --input: 215 16% 72%;
+    --ring: 215 20% 35%;
     --radius: 0.625rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -30,7 +31,7 @@
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 220 13% 78%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -78,5 +79,40 @@
     @apply bg-background text-foreground;
     font-feature-settings: "cv11", "ss01";
     font-variation-settings: "opsz" 32;
+  }
+}
+
+@layer utilities {
+  /* Thin scrollbars for boards / side panels */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(148 163 184 / 0.45) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgb(148 163 184 / 0.45);
+    border-radius: 999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Premium card surface — solid visible outline */
+  .surface-card {
+    @apply bg-white border-2 border-slate-300 rounded-2xl shadow-sm;
+  }
+  .surface-card-hover {
+    @apply surface-card transition-all duration-200 hover:shadow-md hover:border-slate-400;
+  }
+}
+
+/* Smooth focus ring for interactive controls */
+@layer base {
+  :focus-visible {
+    outline: 2px solid rgb(14 165 233 / 0.55);
+    outline-offset: 2px;
   }
 }

@@ -1,6 +1,7 @@
 import { eq, and, sql } from "drizzle-orm";
 import { getDb } from "../queries/connection";
-import { comparacaoItens, revisoesAql, users } from "@db/schema";
+import { comparacaoItens, revisoesAql, users, notificacoes } from "@db/schema";
+import { enviarEmail, emailsDosAdmins, appUrl } from "./email";
 
 /**
  * Designa automaticamente 20% dos itens aprovados de uma comparação
@@ -41,6 +42,8 @@ export async function designarRevisoesAQL(comparacaoId: number): Promise<number>
   if (revisores.length === 0) return 0;
 
   let designados = 0;
+  const porRevisor = new Map<number, { email: string; count: number }>();
+
   for (const item of selecionados) {
     // Verificar se já existe revisão para este item
     const existing = await db
@@ -60,7 +63,32 @@ export async function designarRevisoesAQL(comparacaoId: number): Promise<number>
       status: "pendente",
     });
 
+    const atual = porRevisor.get(revisor.id) ?? { email: revisor.email, count: 0 };
+    atual.count++;
+    porRevisor.set(revisor.id, atual);
+
     designados++;
+  }
+
+  // Notificar cada revisor (in-app + email)
+  const adminEmails = await emailsDosAdmins(db);
+  for (const [revisorId, info] of porRevisor) {
+    await db.insert(notificacoes).values({
+      userId: revisorId,
+      tipo: "revisao_aql",
+      titulo: `${info.count} ${info.count === 1 ? "revisão AQL designada" : "revisões AQL designadas"} para você`,
+      mensagem: `Você foi sorteado para revisar ${info.count} ${info.count === 1 ? "item aprovado" : "itens aprovados"} pela IA. Acesse "Revisões AQL" para avaliar.`,
+      referenciaId: comparacaoId,
+      referenciaTipo: "comparacao",
+    });
+
+    await enviarEmail({
+      destinatarios: [info.email, ...adminEmails],
+      assunto: `${info.count} ${info.count === 1 ? "revisão AQL" : "revisões AQL"} para você`,
+      mensagem: `Você foi sorteado para revisar ${info.count} ${info.count === 1 ? "item aprovado" : "itens aprovados"} pela IA no controle de qualidade AQL.`,
+      ctaLabel: "Abrir Revisões AQL",
+      ctaUrl: appUrl("/revisoes-aql"),
+    });
   }
 
   return designados;

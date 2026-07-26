@@ -7,7 +7,14 @@ export function useStatusLabel(key: string) {
 
 export function usePhaseLabel(key: string) {
   const { t } = useTranslation();
-  return t(`phase.${key}`);
+  const label = t(`phase.${key}`);
+  if (label !== `phase.${key}`) return label;
+  // Fase dinâmica sem tradução — humaniza o slug em vez de exibir a chave
+  return key
+    .split(/[_-]/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }
 
 export function useDocTypeLabel(key: string) {

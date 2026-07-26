@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { createRouter, authedQuery } from "./middleware";
 import { getDb } from "./queries/connection";
 import { documentos, pedidos } from "@db/schema";
+import { urlDownload } from "./lib/storage";
 
 export const documentoRouter = createRouter({
   // Registrar documento (ligado a um pedido)
@@ -94,12 +95,51 @@ export const documentoRouter = createRouter({
           tamanhoBytes: documentos.tamanhoBytes,
           tipoDocumento: documentos.tipoDocumento,
           tipoEmbalagem: documentos.tipoEmbalagem,
+          temArquivo: documentos.s3Key,
           ordem: documentos.ordem,
           createdAt: documentos.createdAt,
         })
         .from(documentos)
         .where(eq(documentos.pedidoId, input.pedidoId))
         .orderBy(documentos.ordem);
+    }),
+
+  // URL pré-assinada para baixar o arquivo original do S3 (expira em 15 min)
+  downloadUrl: authedQuery
+    .input(z.object({ id: z.number().positive() }))
+    .query(async ({ ctx, input }) => {
+      const db = getDb();
+
+      const docRows = await db
+        .select({
+          pedidoId: documentos.pedidoId,
+          s3Key: documentos.s3Key,
+          nomeOriginal: documentos.nomeOriginal,
+        })
+        .from(documentos)
+        .where(eq(documentos.id, input.id))
+        .limit(1);
+
+      const doc = docRows.at(0);
+      if (!doc) throw new Error("Documento nao encontrado");
+
+      const pedidoRows = await db
+        .select({ userId: pedidos.userId })
+        .from(pedidos)
+        .where(eq(pedidos.id, doc.pedidoId))
+        .limit(1);
+
+      const pedido = pedidoRows.at(0);
+      if (!pedido || (pedido.userId !== ctx.user.id && ctx.user.role !== "admin")) {
+        throw new Error("Sem permissao");
+      }
+
+      if (!doc.s3Key) {
+        return { url: null, nomeOriginal: doc.nomeOriginal, motivo: "sem_arquivo_s3" };
+      }
+
+      const url = await urlDownload(doc.s3Key);
+      return { url, nomeOriginal: doc.nomeOriginal, expiraEmSegundos: 900 };
     }),
 
   // Atualizar conteudo extraido

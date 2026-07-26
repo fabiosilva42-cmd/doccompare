@@ -1,0 +1,38 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: doccompare-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "DocCompareRoot@2026"
+      MYSQL_DATABASE: doccompare
+      MYSQL_USER: doccompare
+      MYSQL_PASSWORD: "DocCompareDB@2026"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pDocCompareRoot@2026"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:
+    build: .
+    container_name: doccompare-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      # Overrides the .env value so the app reaches MySQL inside Docker
+      DATABASE_URL: "mysql://doccompare:DocCompareDB@2026@db:3306/doccompare"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

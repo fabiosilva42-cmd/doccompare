@@ -277,6 +277,7 @@ export const documentos = mysqlTable("documentos", {
     .notNull(),
   nomeOriginal: varchar("nome_original", { length: 255 }).notNull(),
   nomeArmazenado: varchar("nome_armazenado", { length: 255 }).notNull(),
+  s3Key: varchar("s3_key", { length: 512 }),
   mimeType: varchar("mime_type", { length: 100 }).notNull(),
   tamanhoBytes: bigint("tamanho_bytes", { mode: "number" }).notNull(),
   conteudoExtraido: text("conteudo_extraido"),

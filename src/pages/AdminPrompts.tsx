@@ -16,6 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageShell } from "@/components/layout/PageShell";
+import { PageHeader } from "@/components/phase2/PageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router";
 
@@ -48,7 +50,7 @@ export default function AdminPrompts() {
       setEditingId(null);
       toastSuccess("Prompt atualizado", "As alteracoes foram salvas com sucesso.");
     },
-    onError: (err) => toastError("Erro ao salvar", err.message),
+    onError: (err) => toastError(t("common.error"), err.message),
   });
 
   const toggleMutation = trpc.prompt.toggleAtivo.useMutation({
@@ -97,16 +99,13 @@ export default function AdminPrompts() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2">
-          <Settings className="w-6 h-6 text-slate-600" />
-          {t("admin.promptsTitle")}
-        </h1>
-        <p className="text-sm text-slate-500">
-          {t("dashboard.managePromptsDesc")}
-        </p>
-      </div>
+    <PageShell width="wide">
+      <PageHeader
+        badge={t("nav.admin")}
+        title={t("admin.promptsTitle")}
+        subtitle={t("dashboard.managePromptsDesc")}
+        icon={Settings}
+      />
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
@@ -117,13 +116,13 @@ export default function AdminPrompts() {
           {prompts?.map((prompt) => (
             <Card
               key={prompt.id}
-              className={`border-slate-200 ${prompt.ativo !== "sim" ? "opacity-60" : ""}`}
+              className={`border-slate-300 ${prompt.ativo !== "sim" ? "opacity-60" : ""}`}
             >
               {editingId === prompt.id ? (
                 <CardContent className="p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-slate-900">
-                      Editando: {prompt.nome}
+                      {t("admin.editing", { name: prompt.nome })}
                     </h3>
                     <div className="flex gap-2">
                       <Button
@@ -133,7 +132,7 @@ export default function AdminPrompts() {
                         className="rounded-lg h-8"
                       >
                         <X className="w-4 h-4 mr-1" />
-                        Cancelar
+                        {t("admin.cancel")}
                       </Button>
                       <Button
                         size="sm"
@@ -146,7 +145,7 @@ export default function AdminPrompts() {
                         ) : (
                           <Save className="w-4 h-4 mr-1" />
                         )}
-                        Salvar
+                        {t("admin.save")}
                       </Button>
                     </div>
                   </div>
@@ -154,14 +153,14 @@ export default function AdminPrompts() {
                   {updateMutation.isError && (
                     <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-700">
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      Erro ao salvar. Tente novamente.
+                      {t("admin.saveError")}
                     </div>
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-medium text-slate-500 mb-1 block">
-                        Nome
+                        {t("admin.name")}
                       </label>
                       <input
                         type="text"
@@ -312,7 +311,7 @@ export default function AdminPrompts() {
                           className={`text-[10px] ${
                             prompt.ativo === "sim"
                               ? "text-emerald-600 border-emerald-200"
-                              : "text-slate-400 border-slate-200"
+                              : "text-slate-400 border-slate-300"
                           }`}
                         >
                           {prompt.ativo === "sim" ? "Ativo" : "Inativo"}
@@ -366,6 +365,6 @@ export default function AdminPrompts() {
           ))}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

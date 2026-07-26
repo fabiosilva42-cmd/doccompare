@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { trpc } from "@/providers/trpc";
+import { useTranslation } from "@/i18n/LanguageProvider";
 import {
   ArrowLeft,
   AlertTriangle,
@@ -13,13 +14,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-const tipoLabel: Record<string, { label: string; color: string }> = {
-  falso_positivo: { label: "Falso Positivo", color: "text-amber-600 bg-amber-50" },
-  falso_negativo: { label: "Falso Negativo", color: "text-red-600 bg-red-50" },
-};
+import { PageShell } from "@/components/layout/PageShell";
+import { PageHeader } from "@/components/phase2/PageHeader";
 
 export default function Divergencias() {
+  const { t, locale } = useTranslation();
+  const dateFmt = locale === "pt" ? "pt-BR" : "en-US";
   const [filtroDept, setFiltroDept] = useState<string>("todos");
   const [filtroTipo, setFiltroTipo] = useState<string>("todos");
   const [filtroResolvido, setFiltroResolvido] = useState<string>("todos");
@@ -36,130 +36,144 @@ export default function Divergencias() {
     onSuccess: () => utils.metricas.listarDivergencias.invalidate(),
   });
 
+  const tipoLabel = (tipo: string) => {
+    if (tipo === "falso_positivo") return t("divergences.falsePositive");
+    if (tipo === "falso_negativo") return t("divergences.falseNegative");
+    return tipo;
+  };
+
+  const tipoColor: Record<string, string> = {
+    falso_positivo: "text-amber-600 bg-amber-50",
+    falso_negativo: "text-red-600 bg-red-50",
+  };
+
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
+    <PageShell width="wide">
+      <PageHeader
+        badge={t("nav.admin")}
+        title={t("divergences.title")}
+        subtitle={t("divergences.subtitle")}
+        icon={ShieldAlert}
+      >
         <Link to="/dashboard">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <ArrowLeft className="w-4 h-4" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/15 hover:text-white"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t("divergences.back")}
           </Button>
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <ShieldAlert className="w-6 h-6 text-amber-600" />
-            Divergências IA vs Humano
-          </h1>
-          <p className="text-sm text-slate-500">
-            Casos onde o validador humano discordou da análise da IA.
-          </p>
-        </div>
-      </div>
+      </PageHeader>
 
-      {/* Taxa Geral */}
       <Card className="border-amber-200 bg-amber-50/50">
-        <CardContent className="p-5 flex items-center gap-4">
-          <AlertTriangle className="w-8 h-8 text-amber-600 flex-shrink-0" />
-          <div>
-            <p className="text-sm text-amber-800">
-              <strong>Importante:</strong> Cada divergência registrada aqui indica um ponto de calibração
-              para os prompts. O objetivo é que essa taxa <strong>diminua ao longo do tempo</strong>.
-            </p>
-          </div>
+        <CardContent className="flex items-center gap-4 p-5">
+          <AlertTriangle className="h-8 w-8 shrink-0 text-amber-600" />
+          <p className="text-sm text-amber-800">
+            <strong>{t("divergences.importantTitle")}</strong> {t("divergences.importantBody")}
+          </p>
         </CardContent>
       </Card>
 
-      {/* Filtros */}
       <div className="flex flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-slate-400" />
-          <span className="text-sm text-slate-500">Departamento:</span>
+          <Filter className="h-4 w-4 text-slate-400" />
+          <span className="text-sm text-slate-500">{t("divergences.filterDept")}:</span>
           <select
             value={filtroDept}
             onChange={(e) => setFiltroDept(e.target.value)}
-            className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm"
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
           >
-            <option value="todos">Todos</option>
-            <option value="atendimento">Atendimento</option>
-            <option value="design">Design</option>
-            <option value="cq">CQ</option>
-
+            <option value="todos">{t("status.todos")}</option>
+            <option value="atendimento">{t("phase.atendimento")}</option>
+            <option value="design">{t("phase.design")}</option>
+            <option value="cq">{t("phase.cq")}</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-500">Tipo:</span>
+          <span className="text-sm text-slate-500">{t("divergences.filterType")}:</span>
           <select
             value={filtroTipo}
             onChange={(e) => setFiltroTipo(e.target.value)}
-            className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm"
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
           >
-            <option value="todos">Todos</option>
-            <option value="falso_positivo">Falso Positivo</option>
-            <option value="falso_negativo">Falso Negativo</option>
+            <option value="todos">{t("status.todos")}</option>
+            <option value="falso_positivo">{t("divergences.falsePositive")}</option>
+            <option value="falso_negativo">{t("divergences.falseNegative")}</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-500">Status:</span>
+          <span className="text-sm text-slate-500">{t("divergences.filterStatus")}:</span>
           <select
             value={filtroResolvido}
             onChange={(e) => setFiltroResolvido(e.target.value)}
-            className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm"
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
           >
-            <option value="todos">Todos</option>
-            <option value="nao">Pendentes</option>
-            <option value="sim">Resolvidos</option>
+            <option value="todos">{t("status.todos")}</option>
+            <option value="nao">{t("divergences.pendingPlural")}</option>
+            <option value="sim">{t("divergences.resolvedPlural")}</option>
           </select>
         </div>
       </div>
 
-      {/* Lista */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+          <Loader2 className="h-6 w-6 animate-spin text-sky-500" />
         </div>
       ) : divergencias && divergencias.length > 0 ? (
         <div className="space-y-3">
           {divergencias.map((d) => (
-            <Card key={d.id} className={`border-slate-200 ${d.resolvido ? "opacity-60" : ""}`}>
+            <Card key={d.id} className={`border-slate-300 ${d.resolvido ? "opacity-60" : ""}`}>
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className={`${tipoLabel[d.tipo]?.color || ""} text-[10px]`}>
-                        {tipoLabel[d.tipo]?.label || d.tipo}
-                      </Badge>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <Badge className={`${tipoColor[d.tipo] || ""} text-[10px]`}>{tipoLabel(d.tipo)}</Badge>
                       <Badge variant="outline" className="text-[10px] capitalize">
-                        {d.comparacaoDepartamento}
+                        {t(`phase.${d.comparacaoDepartamento}`) !== `phase.${d.comparacaoDepartamento}`
+                          ? t(`phase.${d.comparacaoDepartamento}`)
+                          : d.comparacaoDepartamento}
                       </Badge>
                       <Badge variant="outline" className="text-[10px]">
                         {d.comparacaoItemTipoEmbalagem}
                       </Badge>
                       {d.resolvido && (
-                        <Badge className="text-[10px] bg-emerald-50 text-emerald-600">
-                          <CheckCircle2 className="w-3 h-3 mr-1" />
-                          Resolvido
+                        <Badge className="bg-emerald-50 text-[10px] text-emerald-600">
+                          <CheckCircle2 className="mr-1 h-3 w-3" />
+                          {t("divergences.resolved")}
                         </Badge>
                       )}
                     </div>
 
                     {d.campoAfetado && (
-                      <p className="text-xs font-medium text-slate-700 mb-1">Campo: {d.campoAfetado}</p>
+                      <p className="mb-1 text-xs font-medium text-slate-700">
+                        {t("divergences.field")} {d.campoAfetado}
+                      </p>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                      <div className="bg-red-50 border border-red-100 rounded-lg p-3">
-                        <p className="text-[10px] font-semibold text-red-600 uppercase tracking-wider mb-1">IA disse</p>
-                        <p className="text-xs text-red-800">{d.descricaoIA || "Não registrado"}</p>
+                    <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <div className="rounded-lg border border-red-100 bg-red-50 p-3">
+                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-red-600">
+                          {t("divergences.aiSaid")}
+                        </p>
+                        <p className="text-xs text-red-800">
+                          {d.descricaoIA || t("divergences.notRegistered")}
+                        </p>
                       </div>
-                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-                        <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-1">Humano discordou</p>
-                        <p className="text-xs text-blue-800">{d.descricaoHumano}</p>
+                      <div className="rounded-lg border border-sky-100 bg-sky-50 p-3">
+                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-sky-700">
+                          {t("divergences.humanDisagreed")}
+                        </p>
+                        <p className="text-xs text-sky-900">{d.descricaoHumano}</p>
                       </div>
                     </div>
 
                     {d.resolvido && d.resolvidoEm && (
-                      <p className="text-[10px] text-slate-400 mt-2">
-                        Resolvido em {new Date(d.resolvidoEm).toLocaleDateString("pt-BR")}
+                      <p className="mt-2 text-[10px] text-slate-400">
+                        {t("divergences.resolvedOn", {
+                          date: new Date(d.resolvidoEm).toLocaleDateString(dateFmt),
+                        })}
                       </p>
                     )}
                   </div>
@@ -168,12 +182,12 @@ export default function Divergencias() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-shrink-0"
+                      className="shrink-0"
                       onClick={() => resolverMutation.mutate({ id: d.id })}
                       disabled={resolverMutation.isPending}
                     >
-                      <CheckCircle2 className="w-4 h-4 mr-1" />
-                      Marcar Resolvido
+                      <CheckCircle2 className="mr-1 h-4 w-4" />
+                      {t("divergences.resolve")}
                     </Button>
                   )}
                 </div>
@@ -184,11 +198,11 @@ export default function Divergencias() {
       ) : (
         <Card className="border-dashed border-slate-300">
           <CardContent className="p-8 text-center">
-            <Eye className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-            <p className="text-sm text-slate-500">Nenhuma divergência encontrada com os filtros aplicados.</p>
+            <Eye className="mx-auto mb-3 h-10 w-10 text-slate-300" />
+            <p className="text-sm text-slate-500">{t("divergences.empty")}</p>
           </CardContent>
         </Card>
       )}
-    </div>
+    </PageShell>
   );
 }

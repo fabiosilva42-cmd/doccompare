@@ -40,20 +40,20 @@ export function LanguageSwitcher({ variant = "header", className }: Props) {
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <Languages className={cn("w-4 h-4", variant === "login" ? "text-slate-400" : "text-slate-500")} />
+      <Languages className={cn("w-4 h-4", variant === "login" || variant === "header" ? "text-slate-400" : "text-slate-500")} />
       <select
         value={locale}
         onChange={(e) => setLocale(e.target.value as Locale)}
         aria-label={t("language.label")}
         className={cn(
           "text-xs font-medium rounded-lg px-2 py-1.5 border focus:outline-none focus:ring-2 focus:ring-sky-500",
-          variant === "login"
-            ? "bg-white/10 border-white/20 text-white"
-            : "bg-white border-slate-200 text-slate-700"
+          variant === "login" || variant === "header"
+            ? "bg-white/10 border-white/15 text-white"
+            : "bg-white border-slate-300 text-slate-700"
         )}
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} className="text-slate-900">
             {o.label}
           </option>
         ))}

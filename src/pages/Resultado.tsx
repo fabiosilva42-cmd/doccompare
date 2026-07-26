@@ -23,8 +23,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageShell } from "@/components/layout/PageShell";
+import { PageHeader } from "@/components/phase2/PageHeader";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/i18n/LanguageProvider";
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   pendente: { label: "Pendente", color: "text-slate-500 bg-slate-100", icon: Clock },
@@ -102,6 +105,7 @@ function formatMarkdown(text: string): string {
 export default function Resultado() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { t, locale } = useTranslation();
   const [overrideObs, setOverrideObs] = useState("");
 
   const { data, isLoading, refetch } = trpc.comparacao.getByUuid.useQuery(
@@ -166,12 +170,12 @@ export default function Resultado() {
     return (
       <div className="max-w-2xl mx-auto text-center py-20">
         <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-slate-900 mb-2">Resultado não encontrado</h2>
-        <p className="text-slate-500 mb-6">O resultado solicitado não existe ou você não tem acesso.</p>
+        <h2 className="text-xl font-semibold text-slate-900 mb-2">{t("result.notFound")}</h2>
+        <p className="text-slate-500 mb-6">{t("result.notFoundHint")}</p>
         <Link to="/dashboard">
           <Button variant="outline" className="rounded-xl">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar ao Dashboard
+            {t("result.backDashboard")}
           </Button>
         </Link>
       </div>
@@ -194,27 +198,26 @@ export default function Resultado() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link to="/dashboard">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">Resultado da Análise</h1>
-            <p className="text-xs text-slate-500">
-              {pedido?.codigoPedido} — {pedido?.nome} — {new Date(comparacao.createdAt).toLocaleString("pt-BR")}
-            </p>
-          </div>
-        </div>
+    <PageShell width="content">
+      <PageHeader
+        badge={t("result.badge")}
+        title={t("result.title")}
+        subtitle={`${pedido?.codigoPedido ?? ""} — ${pedido?.nome ?? ""} — ${new Date(comparacao.createdAt).toLocaleString(locale === "pt" ? "pt-BR" : "en-US")}`}
+        icon={GitCompare}
+      >
         <Badge className={`${status.color} border-0 text-xs`}>
-          <StatusIcon className={`w-3 h-3 mr-1 ${comparacao.status === "processando" ? "animate-spin" : ""}`} />
-          {status.label}
+          <StatusIcon className={`mr-1 h-3 w-3 ${comparacao.status === "processando" ? "animate-spin" : ""}`} />
+          {t(`status.${comparacao.status}`) !== `status.${comparacao.status}`
+            ? t(`status.${comparacao.status}`)
+            : status.label}
         </Badge>
-      </div>
+        <Link to="/dashboard">
+          <Button variant="outline" size="sm" className="h-9 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/15 hover:text-white">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t("result.back")}
+          </Button>
+        </Link>
+      </PageHeader>
 
       {/* Processing state */}
       {comparacao.status === "processando" && (
@@ -223,12 +226,12 @@ export default function Resultado() {
             <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
               <Sparkles className="w-8 h-8 text-blue-500 animate-pulse" />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">Analisando seus documentos...</h2>
-            <p className="text-sm text-slate-500 mb-4">Estamos comparando os documentos do pedido {pedido?.codigoPedido}</p>
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">{t("result.analyzing")}</h2>
+            <p className="text-sm text-slate-500 mb-4">{t("result.analyzingHint", { code: pedido?.codigoPedido ?? "" })}</p>
             <div className="w-64 h-2 bg-blue-200 rounded-full mx-auto overflow-hidden">
               <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: "60%" }} />
             </div>
-            <p className="text-xs text-slate-400 mt-3">Tempo estimado: ~45 segundos</p>
+            <p className="text-xs text-slate-400 mt-3">{t("result.estimatedTime")}</p>
           </CardContent>
         </Card>
       )}
@@ -240,14 +243,14 @@ export default function Resultado() {
             <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">Não foi possível completar a análise</h2>
-            <p className="text-sm text-red-600 mb-6">{comparacao.mensagemErro || "Ocorreu um erro inesperado."}</p>
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">{t("result.errorTitle")}</h2>
+            <p className="text-sm text-red-600 mb-6">{comparacao.mensagemErro || t("common.error")}</p>
             <div className="flex gap-3 justify-center">
               <Button variant="outline" className="rounded-xl" onClick={() => window.location.reload()}>
-                Tentar novamente
+                {t("result.tryAgain")}
               </Button>
               <Link to="/dashboard">
-                <Button variant="ghost" className="rounded-xl">Voltar ao Dashboard</Button>
+                <Button variant="ghost" className="rounded-xl">{t("result.backDashboard")}</Button>
               </Link>
             </div>
           </CardContent>
@@ -307,10 +310,10 @@ export default function Resultado() {
                           <div className="flex items-center gap-2">
                             <input
                               type="text"
-                              placeholder="Observação de reprovação"
+                              placeholder={t("result.rejectionPlaceholder")}
                               value={reprovarObs}
                               onChange={(e) => setReprovarObs(e.target.value)}
-                              className="px-2 py-1 border border-slate-200 rounded text-xs w-64"
+                              className="px-2 py-1 border-2 border-slate-300 rounded text-xs w-64"
                             />
                             <Button
                               size="sm"
@@ -337,7 +340,7 @@ export default function Resultado() {
           )}
 
           {/* Documents info */}
-          <Card className="border-slate-200">
+          <Card className="border-slate-300">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
                 <FileText className="w-4 h-4" />
@@ -413,7 +416,7 @@ export default function Resultado() {
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        placeholder="Justificativa (opcional)"
+                        placeholder={t("phase.overridePlaceholder")}
                         value={overrideObs}
                         onChange={(e) => setOverrideObs(e.target.value)}
                         className="flex-1 px-3 py-2 border border-amber-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -437,7 +440,7 @@ export default function Resultado() {
 
               {/* Resumo Executivo */}
               {item.resumoExecutivo && (
-                <Card className="border-l-4 border-l-blue-500 border-slate-200">
+                <Card className="border-l-4 border-l-blue-500 border-slate-300">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2">
                       <BarChart3 className="w-5 h-5 text-blue-500" />
@@ -465,7 +468,7 @@ export default function Resultado() {
 
               {/* Items table */}
               {item.analises && item.analises.length > 0 && (
-                <Card className="border-slate-200">
+                <Card className="border-slate-300">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base flex items-center gap-2">
                       <GitCompare className="w-5 h-5 text-blue-500" />
@@ -476,12 +479,12 @@ export default function Resultado() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-slate-200">
+                          <tr className="border-b border-slate-300">
                             <th className="text-left py-2 px-3 font-medium text-slate-500">Campo</th>
                             <th className="text-left py-2 px-3 font-medium text-slate-500">Esperado</th>
                             <th className="text-left py-2 px-3 font-medium text-slate-500">Encontrado</th>
                             <th className="text-center py-2 px-3 font-medium text-slate-500">Status</th>
-                            <th className="text-left py-2 px-3 font-medium text-slate-500">Observação</th>
+                            <th className="text-left py-2 px-3 font-medium text-slate-500">{t("result.observation")}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -517,7 +520,7 @@ export default function Resultado() {
           ))}
 
           {/* Metadata */}
-          <Card className="border-slate-200 bg-slate-50/50">
+          <Card className="border-slate-300 bg-slate-50/50">
             <CardContent className="p-4">
               <div className="flex flex-wrap gap-4 text-xs text-slate-500">
                 <div className="flex items-center gap-1.5">
@@ -545,6 +548,6 @@ export default function Resultado() {
           </Card>
         </>
       )}
-    </div>
+    </PageShell>
   );
 }

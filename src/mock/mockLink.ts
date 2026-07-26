@@ -1,4 +1,4 @@
-import type { TRPCLink } from "@trpc/client";
+import { TRPCClientError, type TRPCLink } from "@trpc/client";
 import { observable } from "@trpc/server/observable";
 import type { AppRouter } from "../../api/router";
 import { handleMockProcedure } from "./handlers";
@@ -21,7 +21,9 @@ export const mockLink: TRPCLink<AppRouter> = () => {
           observer.complete();
         })
         .catch((err) => {
-          observer.error(err as Error);
+          observer.error(
+            TRPCClientError.from(err instanceof Error ? err : new Error(String(err)))
+          );
         });
     });
   };

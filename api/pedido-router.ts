@@ -58,8 +58,12 @@ export const pedidoRouter = createRouter({
         dadosCliente: pedidos.dadosCliente,
         createdAt: pedidos.createdAt,
         updatedAt: pedidos.updatedAt,
-        comparacaoCount: sql<number>`(select count(*) from comparacoes where comparacoes.pedido_id = ${pedidos.id})`,
-        documentoCount: sql<number>`(select count(*) from documentos where documentos.pedido_id = ${pedidos.id})`,
+        comparacaoCount: sql<number>`(select count(*) from comparacoes where comparacoes.pedido_id = pedidos.id)`,
+        documentoCount: sql<number>`(select count(*) from documentos where documentos.pedido_id = pedidos.id)`,
+        responsavelNome: sql<string>`(select name from users where users.id = pedidos.user_id)`,
+        departamentoAtivo: pedidos.faseAtual,
+        ultimaComparacaoUuid: sql<string | null>`(select uuid from comparacoes where comparacoes.pedido_id = pedidos.id order by comparacoes.id desc limit 1)`,
+        taxaDivergencia: sql<number>`coalesce(cast(round((select count(*) from analise_itens ai join comparacao_itens ci on ai.comparacao_item_id = ci.id join comparacoes c on ci.comparacao_id = c.id where c.pedido_id = pedidos.id and ai.status in ('warning','critical')) * 100 / nullif((select count(*) from analise_itens ai join comparacao_itens ci on ai.comparacao_item_id = ci.id join comparacoes c on ci.comparacao_id = c.id where c.pedido_id = pedidos.id), 0)) as signed), 0)`,
       })
       .from(pedidos)
       .orderBy(desc(pedidos.createdAt));

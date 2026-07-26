@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "@/i18n/LanguageProvider";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
-import { Menu } from "lucide-react";
+import { Menu, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -23,10 +23,15 @@ export function AppLayout() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="h-dvh flex items-center justify-center bg-[#F8FAFC]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">{t("layout.loading")}</p>
+          <div className="relative">
+            <div className="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg">
+              <Sparkles className="w-5 h-5 text-sky-400" />
+            </div>
+            <div className="absolute -inset-1 rounded-xl border-2 border-sky-500/30 border-t-sky-500 animate-spin" />
+          </div>
+          <p className="text-sm text-slate-500 font-medium">{t("layout.loading")}</p>
         </div>
       </div>
     );
@@ -35,50 +40,57 @@ export function AppLayout() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="h-full flex overflow-hidden bg-[#F8FAFC]">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-40 lg:hidden animate-in fade-in duration-200"
           onClick={() => setSidebarOpen(false)}
+          aria-hidden
         />
       )}
 
-      {/* Sidebar */}
-      <div
+      {/* Fixed sidebar — never scrolls with page */}
+      <aside
         className={`
-          fixed lg:static inset-y-0 left-0 z-50
-          transform transition-transform duration-300 ease-in-out
+          fixed lg:static inset-y-0 left-0 z-50 h-full shrink-0
+          transform transition-transform duration-300 ease-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
         <Sidebar onClose={() => setSidebarOpen(false)} />
-      </div>
+      </aside>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile header */}
-        <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
-              <Menu className="w-5 h-5" />
+      {/* Scrollable main column only */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between border-b border-white/5 bg-[#0B1120] px-4 sm:px-6">
+          <div className="flex items-center gap-3 lg:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
             </Button>
-            <span className="font-semibold text-slate-900">{t("common.appName")}</span>
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-sky-500/20">
+                <Sparkles className="h-3 w-3 text-sky-400" />
+              </div>
+              <span className="text-sm font-semibold text-white">{t("common.appName")}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden lg:block" />
+          <div className="flex items-center gap-1.5">
             <LanguageSwitcher />
             <NotificationBell />
           </div>
         </header>
 
-        {/* Desktop header */}
-        <header className="hidden lg:flex bg-white border-b border-slate-200 px-6 py-3 items-center justify-end gap-3">
-          <LanguageSwitcher />
-          <NotificationBell />
-        </header>
-
-        <main className="flex-1 p-6 lg:p-8 overflow-auto">
-          <Outlet />
+        <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-smooth">
+          <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

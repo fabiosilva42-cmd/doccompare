@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, desc, sql } from "drizzle-orm";
+import { and, eq, desc, sql } from "drizzle-orm";
 import { createRouter, authedQuery } from "./middleware";
 import { getDb } from "./queries/connection";
 import { notificacoes } from "@db/schema";
@@ -68,8 +68,3 @@ export const notificacaoRouter = createRouter({
       return { success: true };
     }),
 });
-
-// Helper para criar condições AND
-function and(...conditions: any[]) {
-  return sql`(${conditions.join(" AND ")})`;
-}

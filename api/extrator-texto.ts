@@ -1,10 +1,8 @@
-import * as pdfParseModule from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 import * as XLSX from "xlsx";
 import { createWorker } from "tesseract.js";
 import { extrairTextoMistral, isMistralOcrEnabled } from "./lib/mistral-ocr";
-
-const pdfParse = (pdfParseModule as any).default || pdfParseModule;
 
 export interface ExtracaoResult {
   texto: string;
@@ -130,9 +128,13 @@ async function extrairTextoPdfComInfo(
   let textoNativo = "";
 
   try {
-    const result = await pdfParse(buffer);
+    // pdf-parse v2: API baseada em classe (a v1 era uma função)
+    const parser = new PDFParse({ data: new Uint8Array(buffer) });
+    const result = await parser.getText();
+    await parser.destroy().catch(() => {});
     textoNativo = result.text?.trim() ?? "";
-  } catch {
+  } catch (err) {
+    console.warn(`[pdf-parse] Falha ao extrair ${nomeOriginal}:`, err instanceof Error ? err.message : err);
     textoNativo = "";
   }
 

@@ -20,29 +20,31 @@ import { MockModeBanner } from "./components/MockModeBanner";
 
 export default function App() {
   return (
-    <>
+    <div className="h-dvh flex flex-col overflow-hidden">
       <MockModeBanner />
       <Toaster position="top-right" richColors closeButton />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/termos" element={<Termos />} />
-        <Route path="/privacidade" element={<Privacidade />} />
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/nova-comparacao" element={<NovaComparacao />} />
-          <Route path="/resultado/:id" element={<Resultado />} />
-          <Route path="/historico" element={<Historico />} />
-          <Route path="/kanban" element={<Kanban />} />
-          <Route path="/preferencias" element={<Preferencias />} />
-          <Route path="/admin/prompts" element={<AdminPrompts />} />
-          <Route path="/admin/usuarios" element={<AdminUsuarios />} />
-          <Route path="/notificacoes" element={<Notificacoes />} />
-          <Route path="/revisoes-aql" element={<RevisoesAQL />} />
-          <Route path="/admin/divergencias" element={<Divergencias />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
+      <div className="flex-1 min-h-0 flex flex-col">
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/termos" element={<Termos />} />
+          <Route path="/privacidade" element={<Privacidade />} />
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/nova-comparacao" element={<NovaComparacao />} />
+            <Route path="/resultado/:id" element={<Resultado />} />
+            <Route path="/historico" element={<Historico />} />
+            <Route path="/kanban" element={<Kanban />} />
+            <Route path="/preferencias" element={<Preferencias />} />
+            <Route path="/admin/prompts" element={<AdminPrompts />} />
+            <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+            <Route path="/notificacoes" element={<Notificacoes />} />
+            <Route path="/revisoes-aql" element={<RevisoesAQL />} />
+            <Route path="/admin/divergencias" element={<Divergencias />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+    </div>
   );
 }

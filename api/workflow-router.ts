@@ -2,6 +2,7 @@ import { z } from "zod";
 import { eq, and, sql } from "drizzle-orm";
 import { createRouter, authedQuery } from "./middleware";
 import { getDb } from "./queries/connection";
+import { enviarEmail, emailsDosAdmins, appUrl } from "./lib/email";
 import {
   pedidos,
   comparacoes,
@@ -178,6 +179,17 @@ export const workflowRouter = createRouter({
             "pedido"
           );
         }
+
+        await enviarEmail({
+          destinatarios: [
+            ...usersNext.map((u) => u.email),
+            ...(await emailsDosAdmins(db)),
+          ],
+          assunto: `Pedido ${pedido.codigoPedido} aguarda ${proximoDept}`,
+          mensagem: `O pedido "${pedido.nome}" (${pedido.codigoPedido}) foi movido para a fase de <strong>${proximoDept}</strong> e aguarda sua análise.`,
+          ctaLabel: "Abrir DocCompare",
+          ctaUrl: appUrl("/dashboard"),
+        });
       }
 
       // Notificar supervisor se houve reprovação resolvida
@@ -198,6 +210,17 @@ export const workflowRouter = createRouter({
             "pedido"
           );
         }
+
+        await enviarEmail({
+          destinatarios: [
+            ...supervisors.map((s) => s.email),
+            ...(await emailsDosAdmins(db)),
+          ],
+          assunto: `Pedido ${pedido.codigoPedido} avançou com override`,
+          mensagem: `O pedido "${pedido.nome}" avançou de fase após correção de itens reprovados.`,
+          ctaLabel: "Ver pedido",
+          ctaUrl: appUrl("/historico"),
+        });
       }
 
       return { success: true, faseAnterior: pedido.faseAtual, novaFase: proxima };
@@ -250,6 +273,24 @@ export const workflowRouter = createRouter({
           "pedido"
         );
       }
+
+      const criadorRows = await db
+        .select({ email: users.email })
+        .from(users)
+        .where(eq(users.id, pedido.userId))
+        .limit(1);
+
+      await enviarEmail({
+        destinatarios: [
+          ...criadorRows.map((c) => c.email),
+          ...supervisors.map((s) => s.email),
+          ...(await emailsDosAdmins(db)),
+        ],
+        assunto: `Pedido ${pedido.codigoPedido} precisa de correção`,
+        mensagem: `A fase de <strong>${pedido.faseAtual}</strong> do pedido "${pedido.nome}" foi reprovada.${input.observacao ? `<br><br><em>Observação: ${input.observacao}</em>` : ""}`,
+        ctaLabel: "Ver pedido",
+        ctaUrl: appUrl("/historico"),
+      });
 
       return { success: true };
     }),

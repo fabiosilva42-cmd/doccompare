@@ -82,7 +82,6 @@ export function validarNcm(ncm: string, descricaoProduto?: string): ValidacaoNcm
   // Se temos descrição do produto e NCM conhecido, verificar consistência básica
   if (descricaoProduto && descricaoConhecida) {
     const produtoLower = descricaoProduto.toLowerCase();
-    const ncmLower = descricaoConhecida.toLowerCase();
 
     // Verificações básicas de consistência
     const palavrasChave = [

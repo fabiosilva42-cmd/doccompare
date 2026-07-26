@@ -117,12 +117,29 @@ export const comparacaoRouter = createRouter({
     .input(z.object({ uuid: z.string() }))
     .query(async ({ input }) => {
       const db = getDb();
+
+      // Aceita o uuid da comparação OU o id numérico do pedido (várias
+      // páginas linkam /resultado/{pedidoId}) — nesse caso resolve para a
+      // comparação mais recente do pedido.
+      let uuid = input.uuid;
+      if (/^\d+$/.test(uuid)) {
+        const latest = await db
+          .select({ uuid: comparacoes.uuid })
+          .from(comparacoes)
+          .where(eq(comparacoes.pedidoId, Number(uuid)))
+          .orderBy(desc(comparacoes.id))
+          .limit(1);
+        const l = latest.at(0);
+        if (!l) return null;
+        uuid = l.uuid;
+      }
+
       const compRows = await db
         .select()
         .from(comparacoes)
         .leftJoin(prompts, eq(comparacoes.promptId, prompts.id))
         .leftJoin(pedidos, eq(comparacoes.pedidoId, pedidos.id))
-        .where(eq(comparacoes.uuid, input.uuid))
+        .where(eq(comparacoes.uuid, uuid))
         .limit(1);
 
       const row = compRows.at(0);

@@ -32,12 +32,12 @@ function limpar(codigo: string): string {
  * Para DUN-14: passar os 13 primeiros dígitos
  */
 function calcularDigitoVerificador(digitos: string): number {
+  // Regra GS1: percorrendo do dígito MAIS À DIREITA do payload para a
+  // esquerda, o primeiro multiplica por 3, alternando 3/1. Iterar da
+  // esquerda inverte os pesos quando o payload tem tamanho par (EAN-13).
   let soma = 0;
   for (let i = 0; i < digitos.length; i++) {
-    const digito = parseInt(digitos[i], 10);
-    // Posições ímpares (1, 3, 5...) → multiplica por 3
-    // Posições pares (2, 4, 6...) → multiplica por 1
-    // Nota: índice 0 = posição 1 (ímpar)
+    const digito = parseInt(digitos[digitos.length - 1 - i], 10);
     soma += i % 2 === 0 ? digito * 3 : digito;
   }
   const resto = soma % 10;

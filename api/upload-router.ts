@@ -4,6 +4,7 @@ import { createRouter, authedQuery } from "./middleware";
 import { getDb } from "./queries/connection";
 import { documentos, pedidos } from "@db/schema";
 import { extrairTexto } from "./extrator-texto";
+import { uploadDocumento } from "./lib/storage";
 
 export const uploadRouter = createRouter({
   register: authedQuery
@@ -62,12 +63,20 @@ export const uploadRouter = createRouter({
           file.nomeOriginal
         );
 
+        // Binário vai para o S3 (metadados ficam no banco)
+        const s3Key = await uploadDocumento(buffer, {
+          pedidoId: input.pedidoId,
+          nomeOriginal: file.nomeOriginal,
+          mimeType: file.mimeType,
+        });
+
         const result = await db.insert(documentos).values({
           pedidoId: input.pedidoId,
           tipoDocumento: file.tipoDocumento,
           tipoEmbalagem: file.tipoEmbalagem,
           nomeOriginal: file.nomeOriginal,
-          nomeArmazenado: file.nomeOriginal,
+          nomeArmazenado: s3Key ?? file.nomeOriginal,
+          s3Key,
           mimeType: file.mimeType,
           tamanhoBytes: file.tamanhoBytes,
           conteudoExtraido,
